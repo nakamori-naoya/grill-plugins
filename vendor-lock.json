@@ -1,5 +1,0 @@
-{
-  "schema": 1,
-  "upstream": {"repository":"https://github.com/nakamori-naoya/harness-plugins","branch":"main","commit":"10852c3365df0c454160082b1458ca381e5d3dab","copied_at":"2026-08-26"},
-  "plugins": [{"name":"grill","version":"0.2.12","path":"plugins/skills/authoring/grill"}]
-}

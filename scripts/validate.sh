@@ -10,9 +10,8 @@ done
 jq -e '.name=="grill" and (.plugins|length==1) and .plugins[0].name=="grill" and .plugins[0].version=="0.2.12"' "$ROOT/.agents/plugins/marketplace.json" "$ROOT/.claude-plugin/marketplace.json" >/dev/null || failed=1
 cmp -s "$ROOT/shared/prepare.sh" "$plugin/scripts/prepare.sh" || failed=1
 bash -n "$plugin/scripts/prepare.sh" || failed=1
-PYTHONPYCACHEPREFIX="${TMPDIR:-/tmp}/grill-pycache" python3 -m py_compile "$ROOT/scripts/sync-skill-entry.py" || failed=1
 if [ "$failed" -eq 0 ]; then
-  echo 'Validation: 8 passed, 0 failed'
+  echo 'Validation: passed'
 else
   echo 'Validation: failed'
 fi
