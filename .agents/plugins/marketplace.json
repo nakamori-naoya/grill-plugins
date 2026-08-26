@@ -1,0 +1,7 @@
+{
+  "name": "grill",
+  "interface": {"displayName": "Grill"},
+  "plugins": [
+    {"name":"grill","source":{"source":"local","path":"./plugins/skills/authoring/grill"},"policy":{"installation":"AVAILABLE","authentication":"ON_INSTALL"},"category":"Productivity","version":"0.2.12"}
+  ]
+}
