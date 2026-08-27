@@ -40,6 +40,8 @@ skillでは、同梱設定の `prompt_parameters` に宣言されたpathだけ�
 
 単体利用は `<repo>/.harness-plugins/grill.config.yml`、端末固有値は `<repo>/.harness-plugins/grill.local.yml` に置く。別playbookから呼ぶ場合は、その入口が渡すscope内の `grill.config.yml` が最優先になる。
 
+grillは問い方と決定記録だけを担い、題材固有の観点を同梱しない。単体利用では依頼の文脈、別pluginからの利用ではそのpluginの指示書から背景・前提・目的・着眼点を受け取る。
+
 ## 検証
 
 ```bash
