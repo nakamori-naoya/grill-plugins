@@ -2,6 +2,22 @@
 
 合意に達するまで1問ずつ確認し、曖昧さを潰して決定と未決を残すClaude Code/Codex両対応marketplaceである。
 
+## インストール
+
+Codexでは、marketplaceを登録してpluginをインストールする。
+
+```bash
+codex plugin marketplace add nakamori-naoya/grill-plugins
+codex plugin add grill@grill
+```
+
+Claude Codeでは、次のコマンドを実行する。
+
+```bash
+claude plugin marketplace add nakamori-naoya/grill-plugins
+claude plugin install grill@grill
+```
+
 ## 依存plugin
 
 `grill@grill`に外部pluginへの依存はない。
