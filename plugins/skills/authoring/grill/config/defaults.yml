@@ -1,6 +1,3 @@
-# log_dir: 決定ログの保存先。instructions: 質問時に必ず守る進め方。
+# log_dir: 決定ログの保存先。問い方の規律は設定ではなく references/questioning.md に固定する。
 version: 1
 log_dir: decisions
-instructions:
-  questioning:
-    directive: 依頼と呼び出し側の指示を読み、調べて分からない未決事項を推奨回答つきで1問ずつ聞く
