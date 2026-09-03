@@ -3,6 +3,6 @@
   "owner": {"name": "NaoyaNakamori"},
   "description": "曖昧さを1問ずつ解消し、決定と未決を残すmarketplace",
   "plugins": [
-    {"name":"grill","source":"./plugins/skills/authoring/grill","description":"推奨回答を添えて1問ずつ確認し、合意まで曖昧さを潰す","version":"0.3.0"}
+    {"name":"grill","source":"./plugins/skills/authoring/grill","description":"推奨回答を添えて1問ずつ確認し、合意まで曖昧さを潰す","version":"0.3.1"}
   ]
 }

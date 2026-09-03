@@ -6,10 +6,11 @@ plugin="$ROOT/plugins/skills/authoring/grill"
 TMP_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/grill-validation.XXXXXX") || exit 2
 trap 'rm -rf "$TMP_ROOT"' EXIT
 failed=0
+python3 "$ROOT/scripts/validate-distribution.py" "$ROOT" || failed=1
 for manifest in "$plugin/.codex-plugin/plugin.json" "$plugin/.claude-plugin/plugin.json"; do
-  jq -e '.name=="grill" and .version=="0.3.0"' "$manifest" >/dev/null || failed=1
+  jq -e '.name=="grill" and .version=="0.3.1"' "$manifest" >/dev/null || failed=1
 done
-jq -e '.name=="grill" and (.plugins|length==1) and .plugins[0].name=="grill" and .plugins[0].version=="0.3.0"' "$ROOT/.agents/plugins/marketplace.json" "$ROOT/.claude-plugin/marketplace.json" >/dev/null || failed=1
+jq -e '.name=="grill" and (.plugins|length==1) and .plugins[0].name=="grill" and .plugins[0].version=="0.3.1"' "$ROOT/.agents/plugins/marketplace.json" "$ROOT/.claude-plugin/marketplace.json" >/dev/null || failed=1
 cmp -s "$ROOT/shared/prepare.sh" "$plugin/scripts/prepare.sh" || failed=1
 bash -n "$plugin/scripts/prepare.sh" || failed=1
 
