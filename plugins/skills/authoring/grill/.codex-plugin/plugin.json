@@ -1,6 +1,6 @@
 {
   "name": "grill",
-  "version": "0.3.1",
+  "version": "1.0.0",
   "description": "合意に達するまで1問ずつ問い詰めて、曖昧さを潰す。推奨回答を必ず添え、調べれば分かることは聞かない。決めたことを決定ログへ残す",
   "skills": "./skills",
   "author": {
@@ -16,5 +16,10 @@
       "Skills"
     ],
     "defaultPrompt": "grillを使ってこの作業を進めてください。"
+  },
+  "metadata": {
+    "harness": {
+      "contractVersion": 1
+    }
   }
 }
