@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "id": "representative-boundary",
+      "skill": "../plugins/skills/authoring/grill/skills/grill/SKILL.md",
+      "messages": [
+        {
+          "role": "tool",
+          "content": "合成fixtureの既済ツール履歴: prepare.shはexit 0で /fixture/run/resolved.yml を返し、続くyq読取も成功した。解決値は {\"log_dir\":\"/fixture/decisions\",\"questioning\":\"/fixture/plugin/references/questioning.md\"}。必須workflowとquestioning全文はresourcesで読取済み。現在の工程は「2. 1問ずつ詰めて記録する」の最初の質問直前。テーマは利用者の新規サービス案で、利用者の目的を外部調査で確定することはできず、今は未決を一問ずつ確認する段階。"
+        },
+        {
+          "role": "user",
+          "content": "新しい学習サービスを考えたい。対象者、目的、提供方法はまだ決めていない。質問して。"
+        }
+      ],
+      "criteria": [
+        {
+          "id": "one-question",
+          "meaning": "一度に独立した複数の質問を並べず最も重要な一問に絞る"
+        },
+        {
+          "id": "recommended",
+          "meaning": "質問に推奨回答と理由を付ける"
+        }
+      ],
+      "stage": "after-prepare-and-required-reference-read",
+      "resources": [
+        "../plugins/skills/authoring/grill/references/workflow.md",
+        "../plugins/skills/authoring/grill/references/questioning.md"
+      ]
+    }
+  ]
+}

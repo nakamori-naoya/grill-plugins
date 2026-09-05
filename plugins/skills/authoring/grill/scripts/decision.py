@@ -19,6 +19,7 @@
 """
 
 import argparse
+import fcntl
 import json
 import os
 import re
@@ -39,7 +40,13 @@ def fail(msg, code=2):
 def load_config(raw):
     raw = (raw or "").strip()
     if raw.startswith("{"):
-        return json.loads(raw)
+        try:
+            value = json.loads(raw)
+            if not isinstance(value, dict):
+                fail("--config はobjectが必要")
+            return value
+        except ValueError as exc:
+            fail("--config が壊れている: " + str(exc))
     try:
         result = subprocess.run(
             ["yq", "-o=json", "-I=0", ".", raw], capture_output=True,
@@ -63,6 +70,18 @@ def safe_topic(t):
         fail("--topic が不正（英数と . _ - のみ、128文字まで）: {!r}".format(t))
     return t
 
+
+
+def parse_entry(line, path, number):
+    try:
+        entry = json.loads(line)
+    except ValueError:
+        fail("決定ログが壊れている: {}:{}".format(path, number))
+    keys = {"ts", "topic", "aspect", "status", "what", "why"}
+    if not isinstance(entry, dict) or set(entry) != keys or any(not isinstance(entry[key], str) for key in keys) or entry["status"] not in STATUS or not entry["what"].strip() or not entry["why"].strip():
+        fail("決定ログの構造が壊れている: {}:{}".format(path, number))
+    safe_topic(entry["topic"])
+    return entry
 
 def cmd_add(args, cfg):
     topic = safe_topic(args.topic)
@@ -90,8 +109,16 @@ def cmd_add(args, cfg):
         "why": args.why.strip(),
     }
     try:
-        with open(p, "a", encoding="utf-8") as f:
+        with open(p, "a+", encoding="utf-8") as f:
+            fcntl.flock(f, fcntl.LOCK_EX)
+            f.seek(0)
+            for number, line in enumerate(f, 1):
+                if line.strip():
+                    parse_entry(line, p, number)
+            f.seek(0, os.SEEK_END)
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+            f.flush()
+            os.fsync(f.fileno())
     except OSError as e:
         fail("決定ログへ書けない: {}".format(e))
     print(json.dumps({"decision": "recorded", "path": p, "status": entry["status"]},
@@ -105,14 +132,12 @@ def read_log(cfg, topic):
     out = []
     try:
         with open(p, encoding="utf-8") as f:
-            for line in f:
+            fcntl.flock(f, fcntl.LOCK_SH)
+            for number, line in enumerate(f, 1):
                 line = line.strip()
                 if not line:
                     continue
-                try:
-                    out.append(json.loads(line))
-                except ValueError:
-                    continue  # 壊れた1行で全部を捨てない
+                out.append(parse_entry(line, p, number))
     except OSError as e:
         fail("決定ログを読めない: {}".format(e))
     return out
@@ -151,7 +176,7 @@ def cmd_render(args, cfg):
             return lines
         lines += ["| 決めたこと | なぜ | 観点 | いつ |", "|---|---|---|---|"]
         for e in rows:
-            cell = lambda s: str(s).replace("|", "\\|")
+            cell = lambda s: str(s).replace("|", "\\|").replace("\n", "<br>")
             lines.append("| {} | {} | {} | {} |".format(
                 cell(e.get("what", "")), cell(e.get("why", "")),
                 cell(e.get("aspect", "")), e.get("ts", "")[:10]))
