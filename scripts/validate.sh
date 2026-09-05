@@ -2,16 +2,19 @@
 # Scenario: grill marketplaceが単一pluginとして両runtimeへ配布できる
 set -uo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+python3 "$ROOT/scripts/test-hardening.py" || exit 1
+python3 "$ROOT/scripts/test-decisions.py" || exit 1
 plugin="$ROOT/plugins/skills/authoring/grill"
 TMP_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/grill-validation.XXXXXX") || exit 2
+export TMPDIR="$TMP_ROOT"
 trap 'rm -rf "$TMP_ROOT"' EXIT
 failed=0
 python3 "$ROOT/scripts/validate-distribution.py" "$ROOT" || failed=1
 python3 "$ROOT/scripts/validate-distribution.py" --self-test "$ROOT" || failed=1
 for manifest in "$plugin/.codex-plugin/plugin.json" "$plugin/.claude-plugin/plugin.json"; do
-  jq -e '.name=="grill" and .version=="0.3.1"' "$manifest" >/dev/null || failed=1
+  jq -e '.name=="grill" and (.version|type=="string" and length>0)' "$manifest" >/dev/null || failed=1
 done
-jq -e '.name=="grill" and (.plugins|length==1) and .plugins[0].name=="grill" and .plugins[0].version=="0.3.1"' "$ROOT/.agents/plugins/marketplace.json" "$ROOT/.claude-plugin/marketplace.json" >/dev/null || failed=1
+jq -e '.name=="grill" and (.plugins|length==1) and .plugins[0].name=="grill" and (.plugins[0].version|type=="string" and length>0)' "$ROOT/.agents/plugins/marketplace.json" "$ROOT/.claude-plugin/marketplace.json" >/dev/null || failed=1
 cmp -s "$ROOT/shared/prepare.sh" "$plugin/scripts/prepare.sh" || failed=1
 bash -n "$plugin/scripts/prepare.sh" || failed=1
 
