@@ -119,6 +119,13 @@ def resolve_declared_path(source_root: Path, value: object, label: str) -> Path:
     return resolved
 
 
+def resolve_declared_skill_paths(source_root: Path, value: object, label: str) -> list[Path]:
+    values = value if isinstance(value, list) else [value]
+    if not values or not all(isinstance(item, str) and item for item in values):
+        fail(f"{label}が未宣言です: {source_root}")
+    return [resolve_declared_path(source_root, item, label) for item in values]
+
+
 def codex_capabilities(manifest: dict) -> list[str]:
     interface = manifest.get("interface")
     if not isinstance(interface, dict):
@@ -140,11 +147,12 @@ def validate_skills(source_root: Path, manifests: dict[str, dict]) -> None:
     if not bundled_skills.is_dir():
         fail(f"physical skills directoryがありません: {source_root}")
     for runtime, manifest in manifests.items():
-        skills_root = resolve_declared_path(source_root, manifest.get("skills"), f"{runtime} skills path")
-        if not skills_root.is_dir():
+        skills_roots = resolve_declared_skill_paths(source_root, manifest.get("skills"), f"{runtime} skills path")
+        if any(not skills_root.is_dir() for skills_root in skills_roots):
             fail(f"{runtime} skills pathが実在directoryではありません: {source_root}")
         skill_files = [
             path
+            for skills_root in skills_roots
             for path in skills_root.rglob("SKILL.md")
             if path.is_file() and not path.is_symlink() and skills_root in path.resolve().parents
         ]
