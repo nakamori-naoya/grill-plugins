@@ -1,6 +1,8 @@
-# grill
+# ask-until-agreed（grill packageの内部skill）
 
 **合意に達するまで1問ずつ問い詰めて、曖昧さを潰す。**
+
+**これは公開面ではない。** grill packageが同梱する内部pluginであり、単体でインストールする対象でも、別pluginから名前で呼ぶ対象でもない。外から使う面は公開playbook `grill` と[その契約](../../../playbooks/dialogue/grill/CONTRACT.md)だけである。
 
 **実装しないし、資料も書かない。** 決めたことと未決を残すところまで。
 
@@ -8,9 +10,7 @@
 
 ## 使う
 
-```
-/grill      詰める
-```
+公開playbook `grill` から呼ばれる。利用者の導線は `/grill` のままである。
 
 ## 4つの規律
 
@@ -44,7 +44,7 @@ scripts/decision.py render --topic <題材>     # 決定・未決・取り下げ
 ## 設定
 
 ```yaml
-# <repo>/.harness-plugins/grill.config.yml
+# <repo>/.harness-plugins/grill-dialogue.config.yml
 version: 1
 log_dir: decisions                # 決定ログの置き場
 ```

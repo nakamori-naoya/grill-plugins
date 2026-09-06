@@ -3,7 +3,7 @@
   "cases": [
     {
       "id": "representative-boundary",
-      "skill": "../plugins/skills/authoring/grill/skills/grill/SKILL.md",
+      "skill": "../plugins/skills/dialogue/grill/SKILL.md",
       "messages": [
         {
           "role": "tool",
@@ -26,8 +26,8 @@
       ],
       "stage": "after-prepare-and-required-reference-read",
       "resources": [
-        "../plugins/skills/authoring/grill/references/workflow.md",
-        "../plugins/skills/authoring/grill/references/questioning.md"
+        "../plugins/skills/dialogue/grill/references/workflow.md",
+        "../plugins/skills/dialogue/grill/references/questioning.md"
       ]
     }
   ]
