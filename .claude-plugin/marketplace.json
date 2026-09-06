@@ -9,7 +9,7 @@
       "name": "grill",
       "source": "./plugins",
       "description": "推奨回答を添えて1問ずつ確認し、合意まで曖昧さを潰すPlaybook",
-      "version": "2.0.0"
+      "version": "2.0.1"
     }
   ]
 }

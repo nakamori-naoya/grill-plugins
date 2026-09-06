@@ -1,6 +1,6 @@
 {
   "name": "grill",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "合意に達するまで1問ずつ問い詰め、決定と未決を返すPlaybookを提供する",
   "author": {
     "name": "NaoyaNakamori"
