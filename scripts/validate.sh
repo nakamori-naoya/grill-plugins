@@ -92,7 +92,8 @@ rg -q '\$\{[^}]*\[\s*["'"'"']' "$PLAYBOOK/CONTRACT.md" \
   && note 'CONTRACT.mdがブラケット形の ${...} 参照を例示している（lintが落とす形）'
 
 # ── 3. manifest：両runtimeが同一値で、契約を自己宣言する ───────────────
-python3 - "$PACKAGE" <<'PY' || failed=1
+package_version_file="$TMP_ROOT/package-version"
+python3 - "$PACKAGE" "$package_version_file" <<'PY' || failed=1
 import json, sys
 from pathlib import Path
 package = Path(sys.argv[1])
@@ -122,16 +123,26 @@ if set(h) != set(expected):
 # packageそのものへ短絡させるので、公開playbookが自分自身を依存として解決してしまう。
 if 'grill' in h.get('internalPlugins', {}):
     errors.append('内部plugin名がmarketplace名と衝突している')
+# **版を直書きしない。** releaseのたびに書き換える検査は、書き換え忘れで実体と乖離する。
+# 見るべきは「両runtimeとcatalogが同じ版を指すこと」と「版がSemVerであること」である。
+import re
 for name in ('claude', 'codex'):
-    if data[name].get('name') != 'grill' or data[name].get('version') != '2.0.0':
+    if data[name].get('name') != 'grill':
         errors.append(f'{name} package manifest identityが違う')
+version = data['claude'].get('version')
+if data['codex'].get('version') != version:
+    errors.append('両runtime manifestのversionが一致しない')
+if not isinstance(version, str) or not re.fullmatch(r'(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*)){2}', version):
+    errors.append(f'package manifestのversionがSemVerでない: {version!r}')
+Path(sys.argv[2]).write_text(str(version))
 for message in errors:
     print('[validate] ' + message, file=sys.stderr)
 raise SystemExit(1 if errors else 0)
 PY
-jq -e '.name=="grill" and (.plugins|length==1) and .plugins[0].name=="grill" and .plugins[0].version=="2.0.0"' \
+package_version=$(cat "$package_version_file" 2>/dev/null || echo '')
+jq -e --arg v "$package_version" '.name=="grill" and (.plugins|length==1) and .plugins[0].name=="grill" and .plugins[0].version==$v' \
   "$ROOT/.claude-plugin/marketplace.json" "$ROOT/.agents/plugins/marketplace.json" >/dev/null \
-  || note 'marketplace catalogのidentityが不正'
+  || note 'marketplace catalogのidentityが不正（package manifestと同じ版を指すこと）'
 jq -e '.plugins[0].source=="./plugins"' "$ROOT/.claude-plugin/marketplace.json" >/dev/null \
   || note 'Claude catalogのsourceが./pluginsでない'
 jq -e '.plugins[0].source.path=="./plugins" and .plugins[0].source.source=="local"' "$ROOT/.agents/plugins/marketplace.json" >/dev/null \
@@ -378,7 +389,9 @@ consumer="$TMP_ROOT/consumer"
 cpb="$consumer/plugins/playbooks/probe/probe"
 mkdir -p "$cpb/scripts" "$cpb/.claude-plugin" "$cpb/.codex-plugin" "$consumer/plugins/.claude-plugin" "$consumer/plugins/.codex-plugin"
 git -C "$consumer" init -q 2>/dev/null || { mkdir -p "$consumer"; git -C "$consumer" init -q; }
-cache="$cpb/.harness-plugin-test-cache/grill/grill/2.0.0"
+# **版はmanifestから読む。** ここに版を直書きすると、release後にfixtureが実体から乖離する。
+package_version=$(jq -r '.version' "$PACKAGE/.claude-plugin/plugin.json")
+cache="$cpb/.harness-plugin-test-cache/grill/grill/${package_version}"
 mkdir -p "$(dirname "$cache")"
 cp -R "$PACKAGE" "$cache"
 for runtime in claude codex; do
