@@ -1,0 +1,25 @@
+{
+  "name": "grill",
+  "version": "2.0.0",
+  "description": "合意に達するまで1問ずつ問い詰めて、決定と未決を残す公開Playbook",
+  "skills": "./",
+  "author": {
+    "name": "NaoyaNakamori"
+  },
+  "interface": {
+    "displayName": "Grill",
+    "shortDescription": "合意に達するまで1問ずつ問い詰めて、決定と未決を残す",
+    "longDescription": "合意に達するまで1問ずつ問い詰めて、曖昧さを潰す。推奨回答を必ず添え、調べれば分かることは聞かない。決めたことと未決を呼び出し元へ返す",
+    "developerName": "NaoyaNakamori",
+    "category": "Productivity",
+    "capabilities": [
+      "Skills"
+    ],
+    "defaultPrompt": "grillを使ってこの作業を進めてください。"
+  },
+  "metadata": {
+    "harness": {
+      "contractVersion": 1
+    }
+  }
+}

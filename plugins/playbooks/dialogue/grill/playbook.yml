@@ -1,0 +1,32 @@
+# grill — 合意に達するまで1問ずつ問い詰める。
+#
+# **この playbook は問い方を知らない。** 何を、どの順で呼ぶかだけを持つ。
+# 問い方の規律は内部 skill の側にあり、ここからは見えない。
+# 公開契約は CONTRACT.md（契約 ID: grill/grill、版 1）である。
+# 順番を変えたい・工程を差し替えたいときは、
+# <repo>/.harness-plugins/grill.config.yml で上書きする。
+version: 2
+name: grill
+description: 合意に達するまで1問ずつ問い詰めて、決定と未決を残す
+instructions:
+  execution:
+    directive: stepsを上から順に実行し、.input のtopic・context・questions・groundingを内部skillへ渡す
+  output:
+    directive: 決定と未決を契約の形へ写し、.input.output_to の絶対pathへ書いてから完了する
+
+# 欠けていたら止める。黙って劣化した結果を出さない。
+requires:
+  - {plugin: grill-dialogue, marketplace: grill}
+
+# 呼び出し元へ見せる状態名。内部の記録形式とは別に、ここで固定する。
+contract:
+  version: 1
+  id: grill/grill
+  states: [open, withdrawn]
+
+# stepsは上から実行する。skillは呼ぶ処理、needsは開始条件、providesは完了時に登録する成果物。
+steps:
+  - id: ask
+    skill: ask-until-agreed
+    purpose: 先に調べ、いま問える1問ずつを推奨回答つきで確かめ、決めたことと未決を分けて残す
+    provides: [decisions, open_questions]

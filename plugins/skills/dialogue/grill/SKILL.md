@@ -1,9 +1,9 @@
 ---
-name: grill
+name: ask-until-agreed
 description: 合意に達するまで1問ずつ問い詰めて、曖昧さを潰す。推奨回答を必ず添え、調べれば分かることは聞かない。決めたことと未決を決定ログへ残す。「詰めて」「問い詰めて」「設計を固めて」と言われたとき、実装や資料作成に入る前に使う。
 ---
 
-# grill（合意に達するまで問い詰める）
+# ask-until-agreed（合意に達するまで問い詰める）
 
 **このスキルは実装しないし、資料も書かない。** 曖昧さを潰して、決めたことと未決を残すところまでを担う。
 
@@ -13,7 +13,12 @@ description: 合意に達するまで1問ずつ問い詰めて、曖昧さを潰
 
 <!-- BEGIN shared:skill-entry/root-block -->
 ```bash
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-/absolute/path/to/this/plugin}"
+BUNDLE_ROOT="${CLAUDE_PLUGIN_ROOT:-/absolute/path/to/this/plugin}"
+if [ -d "${BUNDLE_ROOT}/skills/dialogue/grill" ]; then
+  PLUGIN_ROOT="${BUNDLE_ROOT}/skills/dialogue/grill"
+else
+  PLUGIN_ROOT="${BUNDLE_ROOT}"
+fi
 ```
 
 `PLUGIN_ROOT`は配布物rootの絶対パスである。単一skill pluginではこの`SKILL.md`があるdirectory、複数skill pluginでは`skills/<skill>/`の2つ上に当たる。Claude Codeでは`${CLAUDE_PLUGIN_ROOT}`が自動展開される。
@@ -38,11 +43,11 @@ printf '%s\n' "$CFG_FILE"
 
 ## 2. 1問ずつ詰めて記録する
 
-[問い詰めワークフロー](../../references/workflow.md)を必ず読む。先に調査し、いま問える1問ずつを聞き、決まった瞬間に`decision.py`へ記録する。
+[問い詰めワークフロー](references/workflow.md)を必ず読む。先に調査し、いま問える1問ずつを聞き、決まった瞬間に`decision.py`へ記録する。
 
 **問える問いが尽きても、そこで終わりではない。** 決定・未決・取り下げを`render`で提示し、相手が合意したと言うまで工程を閉じない。
 
-設定形式は[README](../../README.md)を参照する。実装や資料作成へ進まず、一度に大量の問いを出さず、推奨回答なしで丸投げしない。
+設定形式は[README](README.md)を参照する。実装や資料作成へ進まず、一度に大量の問いを出さず、推奨回答なしで丸投げしない。
 
 ## 実行設定の寿命
 

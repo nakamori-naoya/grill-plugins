@@ -6,7 +6,7 @@ import subprocess
 import tempfile
 import unittest
 ROOT=Path(__file__).resolve().parents[1]
-SCRIPT=ROOT/'plugins/skills/authoring/grill/scripts/decision.py'
+SCRIPT=ROOT/'plugins/skills/dialogue/grill/scripts/decision.py'
 class Decisions(unittest.TestCase):
  def test_append_list_render_and_corruption(self):
   with tempfile.TemporaryDirectory() as tmp:

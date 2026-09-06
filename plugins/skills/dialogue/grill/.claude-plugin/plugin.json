@@ -1,0 +1,14 @@
+{
+  "name": "grill-dialogue",
+  "version": "2.0.0",
+  "description": "grill packageの内部skill。1問ずつ推奨回答つきで問い、決定と未決を決定ログへ残す",
+  "author": {
+    "name": "NaoyaNakamori"
+  },
+  "skills": "./",
+  "metadata": {
+    "harness": {
+      "contractVersion": 1
+    }
+  }
+}
