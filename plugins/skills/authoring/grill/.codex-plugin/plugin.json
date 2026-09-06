@@ -2,7 +2,7 @@
   "name": "grill",
   "version": "1.0.0",
   "description": "合意に達するまで1問ずつ問い詰めて、曖昧さを潰す。推奨回答を必ず添え、調べれば分かることは聞かない。決めたことを決定ログへ残す",
-  "skills": ["./skills/grill"],
+  "skills": "./skills/grill/",
   "author": {
     "name": "NaoyaNakamori"
   },
