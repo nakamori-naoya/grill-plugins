@@ -2,6 +2,10 @@
 
 合意に達するまで1問ずつ確認し、曖昧さを潰して決定と未決を残すClaude Code/Codex両対応marketplaceである。
 
+**公開しているのはPlaybook package `grill@grill` 1件だけである。** その中に公開playbook `grill` が1本あり、問い方の実装は内部skillとして同梱している。**内部skillは公開面ではない。** 別pluginから名前で呼ぶことも、個別にインストールすることもできない。
+
+外部から使ってよい面は[公開契約](plugins/playbooks/dialogue/grill/CONTRACT.md)（契約ID `grill/grill`、版1）に書いたものだけである。
+
 ## こんなときに使う
 
 **答えによって成果物や実装方針が変わる曖昧さを、利用者と一つずつ決めたいときに使う。** 一度に質問を並べず、各質問へ推奨回答と影響を添え、合意した内容を決定ログへ残す。
@@ -27,7 +31,7 @@
 
 ## インストール
 
-インストールするのは`grill@grill`です。外部プラグインの追加は不要です。
+インストールするのは`grill@grill`（Playbook package）です。外部プラグインの追加は不要です。
 
 内部のスキルは同梱されています。個別にインストールせず、公開入口から利用してください。
 
@@ -90,6 +94,14 @@ marketplaceの取得と、インストール済みパッケージの更新は分
 
 `grill@grill`に外部pluginへの依存はない。
 
+## 別pluginから使う
+
+**公開面はplaybook 1枚だけである。** 呼び出し元は`requires`に`{plugin: grill, marketplace: grill}`を宣言し、stepでは`playbook: grill`と書く。`skill:`や`script:`でこのpackageの中を指すことはできず、resolverが止める。
+
+入力・出力・保証・非契約は[公開契約](plugins/playbooks/dialogue/grill/CONTRACT.md)にある。**そこに書かれていない名前（内部skill名、内部plugin名、工程id、決定ログの置き場と形式、script引数）に依存しないこと。**
+
+利用者は`~/.config/harness-plugins/dependencies.yml`などで契約ID `grill/grill`へ別の実体を束縛できる。束縛先は自分のmanifestで`metadata.harness.implements`にこの契約IDを宣言する必要がある。
+
 ## 設定の上書きと優先順位
 
 設定を持つpluginは、優先順位が最も高い1ファイルだけを選ぶ。複数層をマージしないため、上書きするYAMLには同梱設定と同じ必須項目をすべて含める。必須項目の不足、未知のキー、許可されていない値があれば実行を停止する。
@@ -106,7 +118,9 @@ playbookの静的設定は、scope、repository、personal、同梱 `playbook.ym
 
 skillでは、同梱設定の `prompt_parameters` に宣言されたpathだけ、依頼で明示された値を `--override=<path>=<value>` として最終上書きできる。宣言されていないpathを任意に上書きすることはできない。
 
-単体利用は `<repo>/.harness-plugins/grill.config.yml`、端末固有値は `<repo>/.harness-plugins/grill.local.yml` に置く。別playbookから呼ぶ場合は、その入口が渡すscope内の `grill.config.yml` が最優先になる。
+公開playbookの設定は `<repo>/.harness-plugins/grill.config.yml` に置く。ただし `contract`（契約ID・版・状態名）は公開契約の正本なので、差し替えると停止する。別playbookから呼ぶ場合は、その入口が渡すscope内の `grill.config.yml` が最優先になる。
+
+決定ログの置き場だけは内部skillの設定であり、`<repo>/.harness-plugins/grill-dialogue.config.yml`（端末固有値は `grill-dialogue.local.yml`）に置く。**この名前は内部名であって契約ではない。** 利用者が設定として触るのは構わないが、別pluginの文書や設定でこの名前を語らないこと。
 
 grillは問い方と決定記録だけを担い、題材固有の観点を同梱しない。単体利用では依頼の文脈、別pluginからの利用ではそのpluginの指示書から背景・前提・目的・着眼点を受け取る。
 
@@ -129,6 +143,16 @@ bash scripts/validate.sh
 [意味評価fixture](evals/scenarios.json)を[評価runner](scripts/evaluate-skills.py)へ渡し、異なる生成modelとjudge modelを指定する。モデル名、実model利用、適用設定、入力、出力、SKILL hash、判定の引用と理由を保存する。これはツール無効の次応答を対象とした代表caseの意味評価であり、実ツールを使った全工程E2Eや全行動の保証ではない。保存・CLI・再開の検証は[振る舞い回帰試験](scripts/test-hardening.py)と既存validateが担う。実モデル未実行のfixtureを合格扱いにしない。
 
 ### 破壊的変更の移行
+
+**配布形をskill packageからPlaybook packageへ変えた。** marketplaceの`source`が`./plugins`に変わるので、**再インストールが必要**である。`/grill`で呼ぶ利用者導線は変わらない。
+
+別pluginからの`skill: grill`は使えなくなった。`playbook: grill`へ書き換え、入力は[公開契約](plugins/playbooks/dialogue/grill/CONTRACT.md)の入力schemaに従って`prepare.sh --input=<絶対path>`で渡す。
+
+決定ログの設定ファイル名を `grill.config.yml` から `grill-dialogue.config.yml` へ変えた。`grill.config.yml` は公開playbookの設定になる。
+
+**束縛lockのschemaに `bindings` が増えた。** 実行中のrunが持っている旧schemaのlockは非互換なので、`--bindings=<lock>` へ渡さない。**runを跨いでlockを使い回さず、入口が作り直す。**
+
+**外部依存の入口参照は `${.deps.<論理名>.entry}` になった。** `${.deps.<論理名>.skills.<名前>}` はresolverとlintが`external-dependency-path`で落とす。`entry_skill`は表示用で、その名前で分岐しない。
 
 重複した薄いSKILL入口を廃止した。利用者は公開manifestに列挙された入口を使い、旧入口pathを保存した独自ランチャーは新しい宣言へ切り替える。設定のEXIT trapは廃止し、返されたrun pathを明示して完了・停止時にcleanupする。旧式の一時pathやshell変数だけを再利用しない。
 

@@ -3,13 +3,13 @@
   "owner": {
     "name": "NaoyaNakamori"
   },
-  "description": "曖昧さを1問ずつ解消し、決定と未決を残すmarketplace",
+  "description": "曖昧さを1問ずつ解消し、決定と未決を残すPlaybookパッケージを配布するmarketplace",
   "plugins": [
     {
       "name": "grill",
-      "source": "./plugins/skills/authoring/grill",
-      "description": "推奨回答を添えて1問ずつ確認し、合意まで曖昧さを潰す",
-      "version": "1.0.0"
+      "source": "./plugins",
+      "description": "推奨回答を添えて1問ずつ確認し、合意まで曖昧さを潰すPlaybook",
+      "version": "2.0.0"
     }
   ]
 }
