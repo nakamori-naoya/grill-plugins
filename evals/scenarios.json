@@ -208,6 +208,168 @@
         "一覧を修正したい。受注日にする。受注確定後の作業を減らすため"
       ],
       "expected": "同じq1を更新し、新しい一覧への合意を待つ。旧一覧への同意を再利用しない"
+    },
+    {
+      "id": "answer-via-chat",
+      "entry": "/grill",
+      "input": {
+        "contract": "grill/grill",
+        "version": 1,
+        "topic": "取消ルールのテスト",
+        "context": {
+          "purpose": "テスト用の取消判断を確定する",
+          "audience": "テスト担当者",
+          "boundary": "実際の業務方針と実装には適用しない"
+        },
+        "questions": [
+          {
+            "id": "q1",
+            "question": "取消の締切は何を基準にするか",
+            "recommendation": "出荷日（在庫引当の解放時点と揃うため）"
+          }
+        ],
+        "output_to": "/tmp/grill-test-output.yml"
+      },
+      "initial_state": "質問UIにq1を提示済み。回答はまだない。",
+      "user_turns": [
+        "通常会話で回答: 出荷日とし、その理由も採用する"
+      ],
+      "expected": "同じq1を決定へ移し、一覧への合意を求める。質問UIへの再入力や理由の再確認を求めない。保存はしない。"
+    },
+    {
+      "id": "late-duplicate-answer",
+      "entry": "/grill",
+      "input": {
+        "contract": "grill/grill",
+        "version": 1,
+        "topic": "取消ルールのテスト",
+        "context": {
+          "purpose": "テスト用の取消判断を確定する",
+          "audience": "テスト担当者",
+          "boundary": "実際の業務方針と実装には適用しない"
+        },
+        "questions": [
+          {
+            "id": "q1",
+            "question": "取消の締切は何を基準にするか",
+            "recommendation": "出荷日（在庫引当の解放時点と揃うため）"
+          }
+        ],
+        "output_to": "/tmp/grill-test-output.yml"
+      },
+      "initial_state": "通常会話の回答からq1を決定済み。一覧への終了合意を待っている。",
+      "user_turns": [
+        "元の質問UIから遅れて到着: 出荷日とし、その理由も採用する"
+      ],
+      "expected": "q1の重複回答を受領し、既存一覧への終了合意待ちを維持する。q1や理由を再質問せず、重複回答を終了合意にせず、保存しない。"
+    },
+    {
+      "id": "ui-help-interruption",
+      "entry": "/grill",
+      "input": {
+        "contract": "grill/grill",
+        "version": 1,
+        "topic": "取消ルールのテスト",
+        "context": {
+          "purpose": "テスト用の取消判断を確定する",
+          "audience": "テスト担当者",
+          "boundary": "実際の業務方針と実装には適用しない"
+        },
+        "questions": [
+          {
+            "id": "q1",
+            "question": "取消の締切は何を基準にするか",
+            "recommendation": "出荷日（在庫引当の解放時点と揃うため）"
+          }
+        ],
+        "output_to": "/tmp/grill-test-output.yml"
+      },
+      "initial_state": "q1を質問UIに提示済み。回答待ち。",
+      "user_turns": [
+        "Queued follow-up inputs / 1 question、この表示について聞いている"
+      ],
+      "expected": "表示が保留中の質問を指すことを説明する。題材の質問や選択肢をもう一度送らず、q1の回答待ちを維持する。"
+    },
+    {
+      "id": "reason-already-adopted",
+      "entry": "/grill",
+      "input": {
+        "contract": "grill/grill",
+        "version": 1,
+        "topic": "取消ルールのテスト",
+        "context": {
+          "purpose": "テスト用の取消判断を確定する",
+          "audience": "テスト担当者",
+          "boundary": "実際の業務方針と実装には適用しない"
+        },
+        "questions": [
+          {
+            "id": "q1",
+            "question": "取消の締切は何を基準にするか",
+            "recommendation": "出荷日（在庫引当の解放時点と揃うため）"
+          }
+        ],
+        "output_to": "/tmp/grill-test-output.yml"
+      },
+      "initial_state": "q1の出荷日と理由を提示し、理由の採用まで回答済み。",
+      "user_turns": [
+        "良い（直前の理由採用確認への回答）"
+      ],
+      "expected": "回答履歴と合わせて理由を採用済みと扱い、決定一覧と終了合意の確認へ進む。理由の再確認はしない。"
+    },
+    {
+      "id": "stale-conflicting-answer",
+      "entry": "/grill",
+      "input": {
+        "contract": "grill/grill",
+        "version": 1,
+        "topic": "取消ルールのテスト",
+        "context": {
+          "purpose": "テスト用の取消判断を確定する",
+          "audience": "テスト担当者",
+          "boundary": "実際の業務方針と実装には適用しない"
+        },
+        "questions": [
+          {
+            "id": "q1",
+            "question": "取消の締切は何を基準にするか",
+            "recommendation": "出荷日（在庫引当の解放時点と揃うため）"
+          }
+        ],
+        "output_to": "/tmp/grill-test-output.yml"
+      },
+      "initial_state": "q1は受注日へ修正済み。理由は受注後の作業を減らすため。更新一覧への合意待ち。",
+      "user_turns": [
+        "元の質問UIから遅れて到着: 出荷日とし、その理由も採用する"
+      ],
+      "expected": "変更の意思が不明なため自動上書きしない。どちらを採るかを一問で確認し、推奨は最新の明示修正である受注日とその根拠。合意前に保存しない。"
+    },
+    {
+      "id": "duplicate-after-completion",
+      "entry": "/grill",
+      "input": {
+        "contract": "grill/grill",
+        "version": 1,
+        "topic": "取消ルールのテスト",
+        "context": {
+          "purpose": "テスト用の取消判断を確定する",
+          "audience": "テスト担当者",
+          "boundary": "実際の業務方針と実装には適用しない"
+        },
+        "questions": [
+          {
+            "id": "q1",
+            "question": "取消の締切は何を基準にするか",
+            "recommendation": "出荷日（在庫引当の解放時点と揃うため）"
+          }
+        ],
+        "output_to": "/tmp/grill-test-output.yml"
+      },
+      "initial_state": "一覧への明示合意を受け、結果を一括保存して完了済み。",
+      "user_turns": [
+        "同じq1への再送: 出荷日とし、その理由も採用する"
+      ],
+      "expected": "既に結果へ反映済みと受領を伝える。再度の保存や終了合意を要求しない。"
     }
   ]
 }
