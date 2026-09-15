@@ -96,6 +96,10 @@ class PackageTests(unittest.TestCase):
         self.edit(P + '/playbook.yml', lambda t: t.replace('version: 1', 'version: 9'))
         self.reject('contract declaration')
 
+    def test_input_invocation_cannot_return_to_file_relay(self):
+        self.edit(P + '/playbook.yml', lambda t: t.replace('input: object', 'input: file'))
+        self.reject('contract declaration')
+
     def test_boolean_contract_version(self):
         self.edit(P + "/playbook.yml", lambda t: t.replace("version: 1", "version: true"))
         self.reject("contract declaration")
