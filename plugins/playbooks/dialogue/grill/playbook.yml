@@ -7,8 +7,9 @@ contract:
   id: grill/grill
   version: 1
   states: [open, withdrawn]
+  invocation: {input: object, output: object}
 steps:
   - id: ask
     skill: ask-until-agreed
     purpose: 調査、対話、明示合意、結果保存を完了する
-    provides: [decisions, open_questions]
+    provides: [status, decisions, open_questions, reason]

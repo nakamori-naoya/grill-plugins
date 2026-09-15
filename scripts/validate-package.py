@@ -76,14 +76,17 @@ def validate(root):
     config = yaml_value(path.read_text(), path)
     require(isinstance(config, dict) and type(config.get('version')) is int and config['version'] == 2 and config.get('name') == 'grill', path, 'composition identity mismatch')
     require(config.get('requires') == [{'plugin': 'ask-until-agreed', 'marketplace': 'grill'}], path, 'requires mismatch')
-    require(equal(config.get('contract'), {'id': 'grill/grill', 'version': 1, 'states': ['open', 'withdrawn']}), path, 'contract declaration mismatch')
+    require(equal(config.get('contract'), {
+        'id': 'grill/grill', 'version': 1, 'states': ['open', 'withdrawn'],
+        'invocation': {'input': 'object', 'output': 'object'},
+    }), path, 'contract declaration mismatch')
     steps = config.get('steps')
     require(isinstance(steps, list) and len(steps) == 1 and isinstance(steps[0], dict), path, 'steps must contain one mapping')
     step = steps[0]
     require(set(step) == {'id', 'skill', 'purpose', 'provides'} and step.get('skill') == 'ask-until-agreed'
             and isinstance(step.get('id'), str) and bool(step['id'])
             and isinstance(step.get('purpose'), str) and bool(step['purpose'])
-            and step.get('provides') == ['decisions', 'open_questions'], path, 'steps mismatch')
+            and step.get('provides') == ['status', 'decisions', 'open_questions', 'reason'], path, 'steps mismatch')
     for relative, name in [(PUBLIC, 'grill'), (INTERNAL, 'ask-until-agreed')]:
         path = package / relative / 'SKILL.md'
         text = path.read_text()

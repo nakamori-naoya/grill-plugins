@@ -1,4 +1,4 @@
-ちr# grill-plugins 抜本改革仕様書（方針・構造・受け入れ条件）
+# grill-plugins 抜本改革仕様書（方針・構造・受け入れ条件）
 
 > **対象リポジトリ**: `/Users/naoya-nakamoriq/Documents/Github/harness-pluginsv2/grill-plugins`  
 > **準拠規約**:  
@@ -56,7 +56,7 @@
 
 ### 廃止・撤廃するもの
 - 内部スクリプト群: `decision.py`, `finalize.sh`, `prepare.sh`, `run-config.py`
-- 1 問ごとの CLI 追記処理（インメモリで追跡し、最後に `output_to` へ直接 YAML 出力）
+- 1 問ごとの CLI 追記処理（インメモリで追跡し、最後に YAML objectを返し、`output_to`指定時だけ直接出力）
 - SKILL.md 内の動的解決スクリプト呼び出し呪文
 - 規律ドキュメント内の Gherkin BDD シナリオ（テストコード側へ退避）
 
@@ -71,7 +71,7 @@
     - `context` (object, 必須): `purpose`, `audience`, `boundary`
     - `questions` (配列, 必須・空配列可): `{id, question, recommendation}`
     - `grounding` (絶対パス配列, 任意): 既存の調査材料
-    - `output_to` (絶対パス, 必須): 出力 YAML の書き込み先
+    - `output_to` (絶対パス): 保存も求める場合だけ任意。単体・構造化外部呼び出しのどちらも、省略時は会話応答として結果を返す
   - 外部出力スキーマ:
     - `status` (`completed` または `failed`)
     - `decisions[]`: `{id, question, answer, rationale}`
@@ -81,7 +81,7 @@
   - `requires` は内部スキル `ask-until-agreed` のみ。
   - `steps` は内部スキルを 1 回呼ぶだけの単一ステップとする。
 - **`SKILL.md`**:
-  - 契約入力を受け取り、内部スキル `ask-until-agreed` を起動して結果を `output_to` へ出力して終了する薄いディスパッチャ（スクリプト呪文ゼロ）。
+  - 契約入力を受け取り、内部スキル `ask-until-agreed` を起動して結果を返し、`output_to`指定時だけ保存して終了する薄いディスパッチャ（スクリプト呪文ゼロ）。
 
 ---
 
@@ -92,7 +92,7 @@
   3. 未決・論点を 1 問ずつ提示する（必ず `➡️ 推奨: ... 理由: ...` を添える）。
   4. 利用者の回答を受け取り、決定事項と未決事項をインメモリで整理する。
   5. 問える問いが尽きたら、決定一覧（決定・未決・取り下げ）を提示し、利用者の「明示合意」を得る。
-  6. 明示合意を得たら、`output_to` に直接最終 YAML を書き出して完了する。
+  6. 明示合意を得たら最終 YAML objectを返す。`output_to`が指定された場合だけ同じ内容を直接書き出し、単体依頼で未指定なら保存先確認で完了を止めない。
 
 - **参照 1: `references/dialogue-principles.md`（問い方と合意形成の規律）**:
   現行の `questioning.md`（275 行）と `workflow.md`（43 行）から、エージェントの行動を律する本質的原則を約 80〜100 行に凝縮して記述する。
@@ -126,7 +126,7 @@
 
 ### AC 2: `decision.py` およびランタイムスクリプトの完全撤廃
 - `decision.py`, `finalize.sh` などの Python/Shell スクリプトがスキル実行ループから完全に排除されていること。
-- 対話中に CLI 経由でファイルを逐次更新せず、合意完了時に一括で `output_to` に書き出されること。
+- 対話中に CLI 経由でファイルを逐次更新せず、合意完了時に結果が返り、`output_to`指定時だけ一括で書き出されること。
 - SKILL.md に `prepare.sh` や `run-config.py` の呼び出しが存在しないこと。
 
 ### AC 3: 規律ドキュメントの凝縮と Gherkin の分離
