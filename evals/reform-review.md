@@ -7,7 +7,7 @@
 
 | 対象 | 結果と根拠 |
 |---|---|
-| Phase 1 | 内部能力をask-until-agreedへ移設。参照を87行のdialogue-principles.md一本へ集約。旧8本のBDDと理由をdialogue.featureへ移設 |
+| Phase 1 | 内部能力をask-until-agreedへ移設。参照をdialogue-principles.md一本へ集約。旧8本のBDDと理由をdialogue.featureへ移設 |
 | Phase 2 | 公開入口は単一stepへ接続する構成。公開契約から実行基盤を除去。両manifestとcatalogを3.0.0に統一し、データ契約版1を維持 |
 | Phase 3 | 配布物は8ファイル。旧runtime、共有runtime、設定、同期・resolver専用検査を除去。README・AGENTS・CIを更新 |
 | Phase 4 / AC1 | repositoryのvalidate.shとworkspace rootのvalidate.shが成功。repository検査21件、rootの正例と負例が成功。git diff --checkも成功 |
@@ -112,3 +112,49 @@ BDDは実行コードへ変換せず、以下の判断を読解した。Cucumber
 - CI定義は更新したが、GitHub上ではまだ実行していない。ここでの成功はローカル検証の結果。
 - 正式仕様書はもともとdocsがignore対象だったため未追跡だった。docsを追跡対象へ追加し、仕様書の内容は変更していない。
 - commit、push、リリース公開は実行していない。
+
+## 対話の継続規律の追加修正
+
+今回の修正では、回答経路を変えたときの重複質問、遅延回答による巻き戻り、UI説明への割込み、採用済み理由の再確認を対象にした。
+公開入口の入力確認にも、通常会話で受け取った回答を質問UIへ再入力させない規律を適用した。
+最終一覧への明示合意、理由の捏造禁止、合意前の保存禁止は維持している。
+
+### 追加シナリオの意味評価
+
+scenarios.jsonへ入力状態・利用者発言・期待行動を先に固定した6件を追加し、改訂後の指示を各状態へ適用して読解した。
+次の表は担当エージェントによる手動評価であり、独立ランタイムの自動試験ではない。
+
+| ケース | 適用結果と根拠 |
+|---|---|
+| answer-via-chat | 公開入口の入力確認と原則「同じ論点へ反映」により、通常会話の回答でq1を更新。UIへの再入力は不要。理由も明示採用済みなので一覧への合意だけを待つ |
+| late-duplicate-answer | 内部手順2の「受領だけ」によりq1を再作成しない。回答の対象はq1であり、一覧への合意待ちは変えない |
+| ui-help-interruption | 原則のUI説明規律により表示の説明を返す。題材への回答として決定せず、題材の質問も再送しない |
+| reason-already-adopted | 原則38の「既に受け取った発言」と直前の理由採用確認を合わせ、採用済みと判断。理由の再確認は不要 |
+| stale-conflicting-answer | 原則の遅延回答規律により最新決定を自動上書きしない。どちらを採るかの一問だけを提示し、確定前の保存をしない |
+| duplicate-after-completion | 原則の「保存を重複させない」により反映済みと返す。終了済みの一覧への合意を取り直さない |
+
+最初の「出荷日」だけから理由まで採用したとは推測しない。回答と理由を一組の提案として提示し、明示採用できる形にすることで余分な往復を減らす。
+質問UIそのものの未回答表示を消す機能はこのpackageが持たない。回答が会話で得られていれば、その表示を理由に再入力を要求しない。
+
+### 検証結果の責務境界
+
+- 構造検査: repositoryとworkspace rootの検査。
+- 会話内テスト: 既存の実利用者との回答・合意・保存と、今回追加した6件の手動読解。
+- 単体起動: 新規インストールから公開入口を起動する試験は未実施。
+- 外部呼び出し: 宣言と入口対応の検証は実施。隔離した配布物の公開入口は実resolverのCodex/Claude両モードで解決済み。別ランタイムでの実対話・合意・保存・結果返却は未実施。
+
+AC5の全工程を確認済みとは扱わない。今回の修正は対話規律の欠落を補うものであり、手動で作成した会話やYAMLをランタイム実行の証拠に置き換えない。
+
+### 隔離配布物の外部入口解決
+
+実配布packageを一時directoryへコピーし、Product Planningの実resolverへdev-mapで明示した。両runtimeモードで以下を観測した。
+
+- contract: grill/grill、version: 3.0.0、dependency_scope: external、entry_skill: grill。
+- entryは一時directoryの公開入口SKILL.mdに一致した。内部能力の入口へ直接解決していない。
+- 個人のinstall cacheや設定は変更せず、一時directoryは終了後に削除した。
+- これは依存解決の実行検証であり、モデルが質問・合意・保存まで実行した試験ではない。
+
+使用resolver: `/Users/naoya-nakamoriq/Documents/Github/harness-pluginsv2/product-planning-plugins/plugins/playbooks/product/product-north-star-planning/scripts/resolve-dependency.py`
+SHA-256: `87793e9277a4eb206107e689984bef97aeba6c779ca4dc9f2599cab836958001`
+
+今回の構造検査はrepositoryの21件とworkspace root検査が成功した。追加6件の対話評価は手動評価として区別する。
