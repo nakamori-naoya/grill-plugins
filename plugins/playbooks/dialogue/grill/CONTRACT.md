@@ -1,201 +1,105 @@
 # grill 公開契約 v1
 
-**この文書に書かれていることだけが契約である。** ここに無い振る舞い・名前・path・ファイル形式は、いつ変わってもよい提供側の内部事情であり、消費側はそれに依存してはならない。
+曖昧さを対話で解消し、利用者が明示合意した決定と未決を返す。
+契約IDは`grill/grill`、契約版は`1`、kindは`playbook`、pluginとmarketplaceと公開入口名は`grill`である。
 
-| 項目 | 値 |
-|---|---|
-| 契約 ID | `grill/grill` |
-| 版 | 1 |
-| kind | `playbook` |
-| playbook 名 | `grill` |
-| marketplace | `grill` |
-| plugin | `grill` |
+## 入口
 
-消費側の `playbook.yml` はこれを次の 2 行だけで要求する。
+単体では`/grill`へ題材と文脈を渡す。外部からは次の宣言で公開入口を呼び、契約入力を渡す。
 
 ```yaml
 requires:
   - {plugin: grill, marketplace: grill}
-
 steps:
   - id: settle
     playbook: grill
-    purpose: 入力だけでは決まらない事実と判断を、1問ずつ推奨つきで確かめる
+    purpose: 判断が必要な曖昧さを利用者との対話で解消する
     provides: [decisions, open_questions]
 ```
 
-利用者は `~/.config/harness-plugins/dependencies.yml` などで契約 ID `grill/grill` に別の実体を束縛できる。**消費側は `requires` を書き換えない。**
+公開面はこのデータ契約、同じdirectoryの`playbook.yml`と`SKILL.md`である。
+呼び出し元は内部skill、設定、保存途中の状態へ依存しない。
 
-**束縛と `implements` は対になっている。** 利用者が書く `dependencies.yml` の `bindings` は、契約 ID `grill/grill` に対して差し替え先を `{plugin, marketplace}` で指すだけであり、path も version も書けない。差し替え先の側は自分の `plugin.json` の `metadata.harness.implements[]` に `{id: grill/grill, version: 1, kind: playbook, playbook: <入口 playbook 名>}` を宣言する。resolver はこの 2 つを突き合わせ、宣言の無い plugin への束縛を `[error:binding-not-implemented]` で止める。top-level が `version: 1` と `bindings` だけであること、3 層の置き場所、優先順位は README「実行契約と保守」にある。
+## 入力
 
----
-
-## 1. 入口
-
-外部から参照してよいのは次の 4 点だけである。`<root>` は解決済み YAML の `${.deps.<論理名>.root}`。
-
-| # | 入口 | 形 |
-|---|---|---|
-| E1 | `<root>/scripts/prepare.sh <repo> --input=<絶対path> [--scope=<dir>] [--bindings=<lock>]` | 解決済み YAML の**絶対 path を 1 行**、stdout へ。失敗は exit 2、stdout は空。**§2 の入力 schema はこの入口で検査され、違反は exit 2 で止まる** |
-| E2 | `<root>/playbook.yml` | `version: 2`、`name: grill` |
-| E3 | `<root>/scripts/resolve.sh` | `prepare.sh` が内部で呼ぶ入口（`--check-steps` 経路を含む） |
-| E4 | `${.deps.grill.entry}` | **playbook 入口の SKILL.md の絶対 path**。実行手順はここに従う |
-
-**`.deps.<論理名>` から組み立ててよいのは `.root`（許された suffix 付き）と `.entry` だけである。**
-`entry` は `implements[]` のうち契約 ID が一致する要素の `playbook` が指す directory の `SKILL.md` である。
-`entryRoot` は契約の解決に使わない。`.deps.<論理名>.skills.<名前>` を組み立てるのは**禁止**であり、消費側 lint と resolver が `external-dependency-path` として落とす。
-
-`entry_skill`（入口 SKILL.md の frontmatter `name`）は**表示用**である。**その名前で分岐しない。** 名前が変わっても呼び出し方は変わらない。
-
-**参照はドット形で書く。** `.deps` の後ろを角かっこと引用符で綴るブラケット形も lint が落とす。
-
-**`<root>` から組み立ててよいのは E1〜E3 の 3 つだけである。** `<root>/skills/...`、`<root>/references/...`、`<root>/config/...`、`<root>/scripts/` 配下のそれ以外のファイルは、存在しても参照してはならない。
-
-**呼び出し手順は「E1 で解決 → その path を E4 へ渡す」である。** 消費側は E1 が返した解決済み YAML の絶対 path を、そのまま E4 の入口 SKILL.md へ渡す。**入口 SKILL.md は受け取った path をそのまま使い、`prepare.sh` を再実行しない。** 再実行すると入口が決めた `--scope` と `--bindings` の lock が捨てられ、同じ 1 回の呼び出しに実行設定が二重にできる。
-
-**実行設定の後始末は grill が自分で行う。** E1 を呼んだのが消費側であっても、後始末するのは grill である。消費側が `<root>` の script を実行する形は、E1〜E3 のほかに無い。
-
----
-
-## 2. 入力 schema
-
-`--input` へ渡す YAML。**この schema の検査は E1 の入口で行われる。**
-契約 ID・版の不一致、未知のキー、必須キーの欠落、値の形の誤り、書けない `output_to` は、
-いずれも工程を1つも実行せずに exit 2 で止まる。診断は stderr へ `[error:input-schema] key=value` の形で出る。
-
-**path は realpath で正規化してから検査する。** `--input` の絶対 path と `output_to` の親 directory は、
-祖先に symlink を含んでいてよい（macOS 既定の `TMPDIR`＝`/var/folders/...` をそのまま渡せる）。
-解決済み YAML の `.input.output_to` には正規化後の絶対 path が載る。
-
-
-```yaml
-contract: grill/grill               # 必須。固定
-version: 1                          # 必須。固定
-topic: コアドメインの取消ルール       # 必須。日本語可
-context:                            # 必須
-  purpose: 業務として何が正しいかを確定させる
-  audience: 業務を知る人と、それを形にする人
-  boundary: 実装手段は扱わない
-questions:                          # 必須（空配列可）
-  - id: q1
-    question: 取消の締切は受注日基準か出荷日基準か
-    recommendation: 出荷日基準（在庫引当の解放時点と揃うため）
-  - id: q2
-    question: 部分取消を認めるか
-    recommendation: 認めない（返金計算の分岐が業務ルールを二重化するため）
-grounding:                          # 任意
-  - /Users/me/src/acme/docs/domain/order.md
-output_to: /var/folders/x/harness-run-abc/grill-output.yml   # 必須
-```
-
-| 名前 | 型 | 必須 | 意味 |
-|---|---|---|---|
-| `contract` | string | ○ | `grill/grill` 固定 |
-| `version` | int | ○ | `1` 固定 |
-| `topic` | string | ○ | 何について詰めるか。**文字種を制限しない。日本語をそのまま渡してよい** |
-| `context` | object | ○ | `purpose` / `audience` / `boundary` のちょうど 3 つ。**何を問うかは grill の関心ではない**ので、題材固有の観点はここで渡す |
-| `context.purpose` | string | ○ | この対話で何を確定させたいか |
-| `context.audience` | string | ○ | 決めた結果を使うのは誰か |
-| `context.boundary` | string | ○ | 今回は扱わない範囲 |
-| `questions` | 配列 | ○ | `{id, question, recommendation}` のちょうど 3 キー。`id` は `[A-Za-z0-9._-]`、重複不可 |
-| `grounding` | 絶対 path[] | 任意 | 既に分かっている材料。regular file であること |
-| `output_to` | 絶対 path | ○ | 出力 YAML の書き込み先。親 directory が存在し書き込めること |
-
-**`questions` の空配列は「問いはこちらで立ててよい」であって「問わなくてよい」ではない。** 件数を別のキーで渡さない（`questions` の長さと二重管理になる）。
-
-**`recommendation` は必須である。** 推奨のない問いを積むことは、考える仕事をそのまま相手へ渡すことなので、契約として許さない。
-
----
-
-## 3. 出力 schema
-
-grill は完了時に `output_to` の絶対 path へ次の YAML を書く。
+入力objectを直接渡すか、次のYAMLを保存した通常ファイルの絶対パスを渡す。
 
 ```yaml
 contract: grill/grill
 version: 1
-status: completed                   # completed | failed
+topic: コアドメインの取消ルール
+context:
+  purpose: 取消の業務ルールを確定する
+  audience: 業務担当者と開発者
+  boundary: 実装手段は扱わない
+questions:
+  - id: q1
+    question: 取消の締切は何を基準にするか
+    recommendation: 出荷日基準（在庫引当の解放時点と揃うため）
+output_to: /tmp/grill-output.yml
+```
+
+| 名前 | 型・制約 | 必須 |
+|---|---|---|
+| `contract` | string、`grill/grill`固定 | 必須 |
+| `version` | integer、`1`固定 | 必須 |
+| `topic` | 空でないstring。日本語を含め文字種の制限なし | 必須 |
+| `context` | `purpose`, `audience`, `boundary`のちょうど3キーを持つobject。値は空でないstring | 必須 |
+| `questions` | `{id, question, recommendation}`のちょうど3キーを持つobjectの配列。空配列可 | 必須 |
+| `questions[].id` | 空でないstring、文字は`[A-Za-z0-9._-]`、重複不可 | 必須 |
+| `questions[].question` / `recommendation` | 空でないstring | 必須 |
+| `grounding` | 読める通常ファイルの絶対パス配列。空配列可 | 任意 |
+| `output_to` | 絶対パス。親directoryが存在し書き込めること | 必須 |
+
+未知キー、必須値の欠落、型・固定値の不一致は入力不備とする。値を推測で補わない。
+空の`questions`は文脈から論点を探す指定であり、合意を省略する指定ではない。
+`grounding`の省略は追加材料がないことを示す。関連コードや既存文書から調べる責務は残る。
+単体の自然言語依頼では、明示された内容をこの入力へ整理し、不足する目的・読者・範囲・出力先を一問ずつ確認してから開始する。
+
+## 出力
+
+一覧と対話終了への明示合意後、指定された`output_to`へ直接YAMLを一括保存する。
+
+```yaml
+contract: grill/grill
+version: 1
+status: completed
 decisions:
   - id: q1
-    question: 取消の締切は受注日基準か出荷日基準か
+    question: 取消の締切は何を基準にするか
     answer: 出荷日基準
     rationale: 在庫引当の解放時点と揃えるため
 open_questions:
-  - id: q3
-    question: 取消の再申請に上限回数を置くか
-    state: open                     # open | withdrawn
-    reason: 運用データがまだ無い
+  - id: q2
+    question: 再申請の上限を設けるか
+    state: open
+    reason: 運用データを集めてから判断するため
 ```
 
-| 名前 | 型 | 意味 |
-|---|---|---|
-| `status` | `completed` \| `failed` | 合意まで到達したか |
-| `decisions[]` | `{id, question, answer, rationale}` | **決まったこと**。`rationale` は「なぜそう決めたか」 |
-| `open_questions[]` | `{id, question, state, reason}` | **決まらなかったこと** |
-| `open_questions[].state` | `open` \| `withdrawn` | `open` はまだ決められない、`withdrawn` は問い自体を取り下げた |
-| `reason` | string | 停止理由（`status: failed` のとき。`decisions` / `open_questions` は持たない） |
-
-**状態名は `open` と `withdrawn` の 2 つだけである。** grill が内部の記録で使う状態名は別にあるが、それは契約ではない。提供側が変換して返す。
-
-**出力は `decisions` と `open_questions` の 2 つだけである。** 「根拠づけられた入力」のような、決定を素材へ束ね直したものは grill の出力ではない。必要なら消費側が自分の工程で作る。
-
----
-
-## 4. 契約の語と提供側の中の対応
-
-この表の**左側だけが契約**である。右側は提供側がいつでも変えてよい。
-
-| 契約の語 | 提供側が内部でどうするか（**非契約**） |
+| 名前 | 型・意味 |
 |---|---|
-| `topic` | 決定ログ用の内部 id へ決定的に変換して工程へ渡す。利用者へ見せる文言は `topic` のまま |
-| `context` | 工程へ渡す題材固有の前提として読ませる |
-| `questions` | 1 問ずつ確かめる対象にする。空なら自分で問いを立てる |
-| `grounding` | 先に読ませ、そこから分かることを問い直させない |
-| `decisions` | 工程の記録のうち「決まった」ものを写す |
-| `open_questions` | 工程の記録のうち「決まらなかった」ものを写し、状態名を `open` / `withdrawn` へ正規化する |
-| `output_to` | 完了時に出力 YAML を書く |
+| `contract` / `version` | 入力と同じ固定値 |
+| `status` | `completed`または`failed` |
+| `decisions` | completed時に必須の配列。各要素は`{id, question, answer, rationale}`、全値は空でないstring |
+| `open_questions` | completed時に必須の配列。各要素は`{id, question, state, reason}`、全値は空でないstring |
+| `open_questions[].state` | `open`（未決）または`withdrawn`（取り下げ） |
+| `reason` | failed時だけ必須の空でない停止理由。failed時は`decisions`と`open_questions`を持たない |
 
----
+入力由来の問いのIDを維持し、新しい問いのIDも同じ文字制約で採番する。両配列を通してIDを重複させない。
+調査で解消した問いは確認済み前提として一覧に示し、利用者の決定には混ぜない。
+配列に該当事項がなければ`[]`とする。未決が残っていても、その一覧への明示合意があればcompletedになる。
 
-## 5. 保証
+回答・合意待ちは継続待ちであり、出力を保存しない。入力不備・調査不能・中止はfailedとして停止理由を返す。
+有効な書き込み先が確定していれば失敗YAMLを保存する。書けない場合は理由を応答で返し、保存済みと主張しない。
 
-| # | 保証 |
-|---|---|
-| GG1 | **1 問ずつ**問う。一度に大量の問いを出さない |
-| GG2 | **推奨回答を必ず添える** |
-| GG3 | **調べれば分かることを聞かない**。`grounding` から読み取れる事項を問い直さない |
-| GG4 | **自分の問いに自分で答えて先へ進まない** |
-| GG5 | `questions` が空でも問いを立て、相手が合意したと言うまで工程を閉じない |
-| GG6 | 決めたことと未決を**分けて**返す |
-| GG7 | 実装や資料作成へ進まない |
-| GG8 | `topic` の文字種を制限しない。ログ用の変換は自分で行う |
-| GG9 | `output_to` へ出力 YAML を書く。実行設定の後始末を自分で行う |
-| GG10 | **失敗は停止する。** 劣化した結果を返さない。入力が schema を満たさなければ、補わずに exit 2 する |
+## 保証
 
----
-
-## 6. 非契約
-
-契約に書かれていないものはすべて非契約である。以下は代表例であり、網羅ではない。
-
-| 種別 | 具体 |
-|---|---|
-| 工程 id | `ask` |
-| 内部 skill 名・内部 plugin 名 | package の内部で使う名前。消費側から `skill:` で指しても解決しない |
-| 内部 script | 決定ログの追記・読み出し・整形を行う script とその引数 |
-| 決定ログ | 置き場、ファイル形式、1 件の構造、記録上の状態名 |
-| 問いの生成手順 | `references/` 配下の手引き |
-| config | `.harness-plugins/` に置く内部 plugin の設定キー（利用者が触るのは可、消費側 plugin が語るのは不可） |
-| exit code | exit 2 以外の意味づけ |
-| `run-config.py cleanup` | 後始末は GG9 で提供側が行う |
-
-**言い換え表**
-
-| 内部語（禁止） | 契約の言葉 |
-|---|---|
-| `skill: grill` を呼ぶ | `playbook: grill` を呼ぶ |
-| `dropped` として返る | `open_questions[].state: withdrawn` |
-| `decided` として返る | `decisions[]` の要素 |
-| 決定ログの path を読む | `output_to` の出力 YAML を読む |
-| topic を英数へ直してから渡す | `topic` をそのまま渡す（GG8） |
-| `grounded_input` を受け取る | 消費側が `decisions` / `open_questions` から自分で束ねる |
+- 事実は先に調べ、根拠付きの前提として示す。調べれば分かることを聞かない。
+- 前提が揃った問いを一問ずつ出し、推奨回答と理由を必ず添える。
+- 利用者の回答を待つ。自分の提案を自分で承認しない。
+- 決定の理由をその場で確認し、推測で補わない。
+- 決められない論点は理由付きで未決にし、取り下げと区別する。
+- 決定・未決・取り下げの一覧と対話終了への明示合意があるまで完了しない。
+- 対話途中のログを逐次保存せず、終端で最終YAMLを保存して読み戻す。
+- 単体でも外部呼び出しでも同じ対話規律を適用し、結果を返して止める。
+- 実装や資料作成は行わない。
