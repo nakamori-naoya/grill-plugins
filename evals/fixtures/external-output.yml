@@ -1,0 +1,14 @@
+# 合成会話の手動トレース結果。外部ランタイムの実行結果ではない。
+contract: grill/grill
+version: 1
+status: completed
+decisions: []
+open_questions:
+  - id: q1
+    question: 操作感の基準を確定するか
+    state: open
+    reason: 試作がないため。試作を操作してから決める
+  - id: q2
+    question: 通知も対象に含めるか
+    state: withdrawn
+    reason: 今回の対象外のため
