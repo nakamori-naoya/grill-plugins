@@ -1,0 +1,10 @@
+version: 2
+name: conversation-probe
+description: 合成対話テストの呼び出し元
+requires:
+  - {plugin: grill, marketplace: grill}
+steps:
+  - id: settle
+    playbook: grill
+    purpose: 入力の判断を利用者へ確認して合意を得る
+    provides: [decisions, open_questions]

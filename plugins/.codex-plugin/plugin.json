@@ -1,6 +1,6 @@
 {
   "name": "grill",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "description": "合意に達するまで1問ずつ問い詰め、決定と未決を返すPlaybookを提供する",
   "author": {
     "name": "NaoyaNakamori"
@@ -23,7 +23,7 @@
         "grill": "./playbooks/dialogue/grill"
       },
       "internalPlugins": {
-        "grill-dialogue": "./skills/dialogue/grill"
+        "ask-until-agreed": "./skills/dialogue/ask-until-agreed"
       },
       "contractVersion": 1,
       "implements": [

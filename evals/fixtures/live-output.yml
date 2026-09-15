@@ -1,0 +1,9 @@
+contract: grill/grill
+version: 1
+status: completed
+decisions:
+  - id: q1
+    question: 取消の締切基準を出荷日にするか
+    answer: 出荷日
+    rationale: 在庫引当の解放時点と揃えるため
+open_questions: []
