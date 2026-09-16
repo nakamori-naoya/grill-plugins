@@ -114,7 +114,7 @@ class PackageTests(unittest.TestCase):
         self.reject('steps mismatch')
 
     def test_step_kind(self):
-        self.edit(E + '/playbook.yml', lambda t: t.replace('agent_work: invoking_agent\n    purpose: 前提が揃った', 'skill: ask-until-agreed\n    purpose: 前提が揃った'))
+        self.edit(E + '/playbook.yml', lambda t: t.replace('agent_work: invoking_agent\n    purpose: 成果を左右する', 'skill: ask-until-agreed\n    purpose: 成果を左右する'))
         self.reject('steps mismatch')
 
     def test_extra_step(self):
