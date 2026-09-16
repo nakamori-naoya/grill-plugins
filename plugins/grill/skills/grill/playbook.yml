@@ -1,0 +1,28 @@
+# grill — 一問ずつ曖昧さを解消し、明示合意した決定と未決を返す。
+# 公開する入力・出力・保証は CONTRACT.md が正本。工程順はこのYAMLが正本で、
+# すべての工程を同じagentが同じ会話で辿る。工程間で運ぶ値は無く、配列順だけが依存である。
+version: 2
+name: grill
+description: 一問ずつ曖昧さを解消し、明示合意した決定と未決を返す
+inputs: [contract, version, topic, context, questions, grounding, output_to]
+requires: []
+
+steps:
+  - id: investigate
+    agent_work: invoking_agent
+    purpose: 材料、関連コード、既存文書、履歴を読み、確認済み事実と利用者の判断が要る論点を分けて示す
+    needs: [contract, version, topic, context, questions, grounding]
+
+  - id: ask
+    agent_work: invoking_agent
+    purpose: 前提が揃った論点を一件ずつ推奨と理由付きで問い、回答と理由を会話内で保持する
+
+  - id: agree
+    agent_work: invoking_agent
+    purpose: 決定・未決・取り下げの一覧を示し、対話終了への明示合意を一問で得る
+
+  - id: return
+    agent_work: invoking_agent
+    purpose: 契約の出力objectを組み立てて直接返し、output_toが指定されたときだけ一括保存して読み戻す
+    needs: [output_to]
+    provides: [status, decisions, open_questions, reason]

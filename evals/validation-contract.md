@@ -2,28 +2,28 @@
 
 ## 配布構造
 
-正本: 正式改革仕様書の第2・3・4節、package manifest、公開契約、playbook.yml。
-入力: plugins配下の全ファイル・directory、両marketplaceのJSON、両manifest、playbook.yml、2本のSKILL.md。
-正規化: JSONはobjectへ、YAMLはyq v4でJSONへ変換。ファイル名はrepositoryからの相対POSIX表記。frontmatterはYAMLとして読む。
-合格述語: 公開入口grill一件、内部ask-until-agreed一件の宣言が指定directoryと一致する。両runtimeのidentityとharnessが一致する。catalogのidentityがpackageと一致する。配布ファイルは下記の閉じた集合と一致し、余分な空directoryやsymlinkを含まない。唯一のrequiresが内部能力を指し、唯一のstepがその能力を指す。contractのID・版・状態集合が固定値に一致し、invocationは入力・出力ともobjectである。SKILLのnameは各入口名と一致し、Markdownのローカルリンクはpackage内の実在ファイルへ届く。SKILLのshellコードブロックと、旧runtimeファイル名への参照、指示書のGherkin宣言を拒否する。
-失敗時の診断: 違反したファイルの絶対パスと、identity・inventory・requires・steps・link・旧参照のどの条件に違反したかを返す。
-正例: 改革後の実配布packageを一時directoryへcopyした入力が通る。
-反例: 必須ファイル欠落、片側manifestの版違い、catalog版違い、未宣言の公開・内部入口、誤った依存またはstep、名前衝突、契約版違い（整数と真偽値を区別）、入力invocationをfileへ戻す変更、参照切れ、旧runtime呼び出し、Gherkin混入をそれぞれ拒否する。
+正本: `.agents/rules/plugin-package-contract.md`の配置とmanifest規則、package manifest、公開契約、playbook.yml。
+入力: `plugins/grill`配下の全ファイル・directory、`plugins/`直下、両marketplaceのJSON、両manifest、playbook.yml、SKILL.md、CONTRACT.md、references。
+正規化: JSONはobjectへ、YAMLはyq v4でJSONへ変換。ファイル名はpackageからの相対POSIX表記。frontmatterはYAMLとして読む。
+合格述語: marketplace sourceが`./plugins/grill`で、`plugins/`直下にmanifestが無い。公開入口`skills/grill`一件の宣言がdirectoryと一致し、内部skillが無い。両runtimeのidentityとharness（marketplace、contractVersion、playbooks、implements）が一致し、`installationSurface`・`entryRoot`・`internalPlugins`を持たない。catalogのidentityがpackageと一致する。配布ファイルは下記の閉じた集合と一致し、余分な空directoryやsymlinkを含まない。playbook.ymlは`version: 2`、`name: grill`、`requires: []`で、stepsは`investigate`→`ask`→`agree`→`return`の順に`agent_work: invoking_agent`だけを持ち、最終工程が`status / decisions / open_questions / reason`をprovideする。SKILLのnameは`grill`で、Markdownのローカルリンクはpackage内の実在ファイルへ届く。SKILL・CONTRACT・references・playbook.ymlの文字列値に禁止参照形（`${.`、`<!-- BEGIN shared:`、`CLAUDE_PLUGIN_ROOT`、`BUNDLE_ROOT`）と旧runtimeファイル名への参照が無く、SKILLにshellコードブロックが無く、指示書にGherkin宣言が無い。
+失敗時の診断: 違反したファイルの絶対パスと、identity・inventory・requires・steps・link・plumbing・旧参照のどの条件に違反したかを返す。
+正例: 実配布packageを一時directoryへcopyした入力が通る。
+反例: 必須ファイル欠落、`internal/`の追加、`plugins/`直下manifest、片側manifestの版違い、catalog版違い・source二階層違反、`skills`の文字列形、`installationSurface`や`internalPlugins`の宣言、自marketplaceの`requires`、工程順・種別・件数の違い、playbook.ymlのマクロ、名前衝突、参照切れ、旧runtime呼び出し、root解決block、shell block、Gherkin混入をそれぞれ拒否する。
 境界例: `output_to`を省略しても直接objectの結果を返せる。参照文書が指定の一本なら通り、追加の一本または欠落なら拒否する。空directoryとsymlinkも拒否する。題材の語や文量は変えても構造検査が通る。
-意味評価として残す範囲: 調査の真偽、問いと推奨の妥当性、一問の独立性、理由の裏付け、明示合意の解釈、対話の十分性、保存内容と合意の一致、外部呼び出しの実行挙動。
+意味評価として残す範囲: 調査の真偽、問いと推奨の妥当性、一問の独立性、理由の裏付け、明示合意の解釈、対話の十分性、保存内容と合意の一致、外部呼び出しの実行挙動、判断基準と手順が実行agentに十分か。
 
 ## 配布ファイルの閉じた集合
 
-- plugins/LICENSE
-- plugins/.claude-plugin/plugin.json
-- plugins/.codex-plugin/plugin.json
-- plugins/playbooks/dialogue/grill/CONTRACT.md
-- plugins/playbooks/dialogue/grill/playbook.yml
-- plugins/playbooks/dialogue/grill/SKILL.md
-- plugins/skills/dialogue/ask-until-agreed/SKILL.md
-- plugins/skills/dialogue/ask-until-agreed/references/dialogue-principles.md
+- plugins/grill/LICENSE
+- plugins/grill/.claude-plugin/plugin.json
+- plugins/grill/.codex-plugin/plugin.json
+- plugins/grill/skills/grill/CONTRACT.md
+- plugins/grill/skills/grill/playbook.yml
+- plugins/grill/skills/grill/SKILL.md
+- plugins/grill/skills/grill/references/dialogue-principles.md
 
 旧runtime参照の禁止対象はdecision.py、finalize.sh、contract-io.py、prepare.sh、run-config.py、resolve.sh、resolve-dependency.pyとする。
+禁止参照形は`${.`、`<!-- BEGIN shared:`、`CLAUDE_PLUGIN_ROOT`、`BUNDLE_ROOT`とする。
 Gherkinの禁止対象は指示書内のFeature:、Scenario:の行宣言とgherkinコードブロックとする。
 これらは明示的な表現契約であり、対話の意味の代理ではない。行数やキーワード数は採点しない。
 
