@@ -1,0 +1,34 @@
+{
+  "name": "grill",
+  "version": "3.0.0",
+  "description": "合意に達するまで1問ずつ問い詰め、決定と未決を返す公開playbook grillを提供する",
+  "author": {
+    "name": "NaoyaNakamori"
+  },
+  "skills": [
+    "./skills/grill"
+  ],
+  "interface": {
+    "displayName": "Grill",
+    "capabilities": [
+      "Skills"
+    ]
+  },
+  "metadata": {
+    "harness": {
+      "marketplace": "grill",
+      "contractVersion": 1,
+      "playbooks": {
+        "grill": "./skills/grill"
+      },
+      "implements": [
+        {
+          "id": "grill/grill",
+          "version": 1,
+          "kind": "playbook",
+          "playbook": "grill"
+        }
+      ]
+    }
+  }
+}

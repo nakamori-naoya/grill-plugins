@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "grill",
-      "source": "./plugins",
+      "source": "./plugins/grill",
       "description": "推奨回答を添えて1問ずつ確認し、合意まで曖昧さを潰すPlaybook",
       "version": "3.0.0"
     }

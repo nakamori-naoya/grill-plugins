@@ -12,7 +12,7 @@
 
 ## 外部から使う
 
-[公開契約](plugins/playbooks/dialogue/grill/CONTRACT.md)の入力と出力を使う。
+[公開契約](plugins/grill/skills/grill/CONTRACT.md)の入力と出力を使う。
 
 ```yaml
 requires:
@@ -27,6 +27,10 @@ steps:
 呼び出し元は公開入口へ契約入力objectを直接渡し、利用者が回答できる会話を維持する。入力用YAML、設定解決、中間出力ファイルは使わない。
 返却されたstatusとYAML objectを読み、failedなら停止する。指定先がある場合は保存結果も照合する。入力と返却形式の正本は公開契約である。
 
+## 配置の変更（2026-09-16）
+
+marketplaceの`source`を`./plugins`から`./plugins/grill`へ、公開入口を`plugins/playbooks/dialogue/grill`から`plugins/grill/skills/grill`へ移し、内部skill `ask-until-agreed`を公開入口へ統合した。配置変更はinstall identityを変えるため、release時にmajor bumpが要る。契約ID`grill/grill`、データ契約版`1`、入力と出力のデータ形式は変わらない。
+
 ## 3.0.0での変更
 
 対話中のCLIによる逐次記録、設定解決、共有runtimeを廃止した。
@@ -36,7 +40,7 @@ steps:
 
 ## 構造と検証
 
-公開入口一件と自己完結した内部能力一件で構成する。対話原則は内部の参照文書一本に置く。
+公開入口 `plugins/grill/skills/grill` 一件で構成する。`SKILL.md`が目的・入力・判断基準・手順・停止条件・出力を持ち、隣接`playbook.yml`が同じagentの辿る4工程（調べる→一問ずつ問う→一覧合意→結果を返す）を宣言し、対話原則は参照文書一本に置く。内部skillと薄いwrapperは持たない。
 開発時の構造検査はBash、Python 3、yq v4を使う。スキルの対話実行に専用CLIは不要。
 repositoryの`scripts/validate.sh`で配布構造と、その検査を壊す負例を実行する。
 workspaceではrootの検査入口へ対象repositoryの絶対パスを渡す。

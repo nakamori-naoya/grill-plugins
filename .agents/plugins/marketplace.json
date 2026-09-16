@@ -8,7 +8,7 @@
       "name": "grill",
       "source": {
         "source": "local",
-        "path": "./plugins"
+        "path": "./plugins/grill"
       },
       "policy": {
         "installation": "AVAILABLE",
