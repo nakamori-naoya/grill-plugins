@@ -50,4 +50,4 @@ workspaceではrootの検査入口へ対象repositoryの絶対パスを渡す。
 - [意味評価記録](evals/reform-review.md)
 
 構造検査の成功は対話の正しさを保証しない。意味評価と実環境での確認状況は評価記録に記す。
-`release.py`はmanifestとcatalogの版更新・リリース記録作成の保守用CLIとして残す。
+版更新・リリース記録の作成（`release.py`）を含む保守用toolの正本は兄弟checkoutの `../harness-tools/` であり、このrepositoryは複製を持たない。`scripts/validate.sh` は `../harness-tools/tools/` の実在を確認してから呼び、無ければ止まる。CIの `validate.yml` も `harness-tools` を兄弟checkoutして `harness-tools/ci/validate.sh` を実行する。
