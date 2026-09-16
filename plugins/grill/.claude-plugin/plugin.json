@@ -1,6 +1,6 @@
 {
   "name": "grill",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "厳選した問い（最大6問）を1問ずつ確かめて合意に達し、決定と未決を返す公開playbook grillを提供する",
   "author": {
     "name": "NaoyaNakamori"
