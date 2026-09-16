@@ -4,14 +4,14 @@
 version: 2
 name: grill
 description: 一問ずつ曖昧さを解消し、明示合意した決定と未決を返す
-inputs: [contract, version, topic, context, questions, grounding, output_to]
+inputs: [contract, version, topic, context, questions, references, output_to]
 requires: []
 
 steps:
   - id: investigate
     agent_work: invoking_agent
     purpose: 材料、関連コード、既存文書、履歴を読み、確認済み事実と利用者の判断が要る論点を分けて示す
-    needs: [contract, version, topic, context, questions, grounding]
+    needs: [contract, version, topic, context, questions, references]
 
   - id: ask
     agent_work: invoking_agent
