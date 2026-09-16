@@ -48,12 +48,12 @@ output_to: /tmp/grill-output.yml
 | `questions` | `{id, question, recommendation}`のちょうど3キーを持つobjectの配列。空配列可。7件以上渡すこともできるが、1回の呼び出しで利用者へ問うのは調査で見つけた問いと合わせて最大6問であり、超えた分は問わず`open_questions`へ返る | 必須 |
 | `questions[].id` | 空でないstring、文字は`[A-Za-z0-9._-]`、重複不可 | 必須 |
 | `questions[].question` / `recommendation` | 空でないstring | 必須 |
-| `grounding` | 読める通常ファイルの絶対パス配列。空配列可 | 任意 |
+| `references` | 追加で従う資料（読める通常ファイル）の絶対パス配列。空配列可 | 任意 |
 | `output_to` | 絶対パス。親directoryが存在し書き込めること | 任意。保存も求める場合だけ指定 |
 
 未知キー、必須値の欠落、型・固定値の不一致は入力不備とする。値を推測で補わない。
 空の`questions`は文脈から論点を探す指定であり、合意を省略する指定ではない。
-`grounding`の省略は追加材料がないことを示す。関連コードや既存文書から調べる責務は残る。
+`references`の省略は追加材料がないことを示す。関連コードや既存文書から調べる責務は残る。プロジェクト固有の規約や文脈は、対象repositoryのAGENTS.md / CLAUDE.mdと`references`で渡される。
 単体の自然言語依頼でも外部からの構造化呼び出しでも、`output_to`の不足だけを理由に本題の調査や完了を止めない。最終結果objectは常に呼び出し元へ直接返す。保存も求められた場合だけ`output_to`を受け取り、保存先は推測しない。
 
 ## 出力
