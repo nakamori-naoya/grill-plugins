@@ -25,7 +25,7 @@ steps:
 ```
 
 呼び出し元は公開入口へ契約入力objectを直接渡し、利用者が回答できる会話を維持する。入力用YAML、設定解決、中間出力ファイルは使わない。
-返却されたstatusとYAML objectを読み、failedなら停止する。指定先がある場合は保存結果も照合する。入力と返却形式の正本は公開契約である。
+返却されたstatusとYAML objectを読み、failedなら停止する。指定先がある場合は保存結果も照合する。入力と返却形式は公開契約が定義する。
 
 ## 配置の変更（2026-09-16）
 
@@ -50,4 +50,4 @@ workspaceではrootの検査入口へ対象repositoryの絶対パスを渡す。
 - [意味評価記録](evals/reform-review.md)
 
 構造検査の成功は対話の正しさを保証しない。意味評価と実環境での確認状況は評価記録に記す。
-版更新・リリース記録の作成（`release.py`）を含む保守用toolの正本は兄弟checkoutの `../harness-tools/` であり、このrepositoryは複製を持たない。`scripts/validate.sh` は `../harness-tools/tools/` の実在を確認してから呼び、無ければ止まる。CIの `validate.yml` も `harness-tools` を兄弟checkoutして `harness-tools/ci/validate.sh` を実行する。
+版更新・リリース記録の作成（`release.py`）を含む保守用toolの参照元は兄弟checkoutの `../harness-tools/` であり、このrepositoryは複製を持たない。`scripts/validate.sh` は `../harness-tools/tools/` の実在を確認してから呼び、無ければ止まる。CIの `validate.yml` も `harness-tools` を兄弟checkoutして `harness-tools/ci/validate.sh` を実行する。
