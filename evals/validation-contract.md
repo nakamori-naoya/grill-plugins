@@ -2,7 +2,7 @@
 
 ## 配布構造
 
-正本: `.agents/rules/plugin-package-contract.md`の配置とmanifest規則、package manifest、公開契約、playbook.yml。
+基準資料: `.agents/rules/plugin-package-contract.md`の配置とmanifest規則、package manifest、公開契約、playbook.yml。
 入力: `plugins/grill`配下の全ファイル・directory、`plugins/`直下、両marketplaceのJSON、両manifest、playbook.yml、SKILL.md、CONTRACT.md、references。
 正規化: JSONはobjectへ、YAMLはyq v4でJSONへ変換。ファイル名はpackageからの相対POSIX表記。frontmatterはYAMLとして読む。
 合格述語: marketplace sourceが`./plugins/grill`で、`plugins/`直下にmanifestが無い。公開入口`skills/grill`一件の宣言がdirectoryと一致し、内部skillが無い。両runtimeのidentityとharness（marketplace、contractVersion、playbooks、implements）が一致し、`installationSurface`・`entryRoot`・`internalPlugins`を持たない。catalogのidentityがpackageと一致する。配布ファイルは下記の閉じた集合と一致し、余分な空directoryやsymlinkを含まない。playbook.ymlは`version: 2`、`name: grill`、`requires: []`で、stepsは`investigate`→`ask`→`agree`→`return`の順に`agent_work: invoking_agent`だけを持ち、最終工程が`status / decisions / open_questions / reason`をprovideする。SKILLのnameは`grill`で、Markdownのローカルリンクはpackage内の実在ファイルへ届く。SKILL・CONTRACT・references・playbook.ymlの文字列値に禁止参照形（`${.`、`<!-- BEGIN shared:`、`CLAUDE_PLUGIN_ROOT`、`BUNDLE_ROOT`）と旧runtimeファイル名への参照が無く、SKILLにshellコードブロックが無く、指示書にGherkin宣言が無い。
