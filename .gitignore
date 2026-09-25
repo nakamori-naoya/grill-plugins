@@ -15,5 +15,4 @@ __pycache__/
 !/README.md
 !/SECURITY.md
 !/.gitignore
-!/releases/
 !/docs/
