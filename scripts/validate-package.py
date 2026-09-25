@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Closed structural predicates declared in evals/validation-contract.md; no semantic grading."""
+"""grill package の構造を検査する。判定は manifest、配置、禁止した文字列の有無だけで一意に決まり、意味の採点はしない。"""
 import argparse
 import json
 from pathlib import Path
@@ -110,7 +110,7 @@ def validate(root):
         require(not any(token in text for token in PLUMBING), path, 'plumbing reference')
     for path in package.rglob('*.md'):
         text = path.read_text()
-        require(not re.search(r'^\s*(?:Feature:|Scenario:|```gherkin)', text, re.M), path, 'Gherkin belongs in evals')
+        require(not re.search(r'^\s*(?:Feature:|Scenario:|```gherkin)', text, re.M), path, 'Gherkin は配布物に置かない')
         for link in re.findall(r'\[[^\]]*\]\(([^)]+)\)', text):
             if '://' in link or link.startswith('#'):
                 continue
