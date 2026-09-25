@@ -37,13 +37,14 @@ class PackageTests(unittest.TestCase):
     def test_real_distribution_copy(self):
         validator.validate(self.root)
 
-    def test_missing_reference(self):
-        (self.root / E / 'references/dialogue-principles.md').unlink()
+    def test_missing_contract(self):
+        (self.root / E / 'CONTRACT.md').unlink()
         self.reject('inventory')
 
     def test_extra_reference(self):
+        (self.root / E / 'references').mkdir()
         (self.root / E / 'references/extra.md').write_text('extra')
-        self.reject('inventory')
+        self.reject('unexpected directory')
 
     def test_internal_skill_forbidden(self):
         (self.root / P / 'internal/other').mkdir(parents=True)
@@ -59,7 +60,7 @@ class PackageTests(unittest.TestCase):
         self.reject('unexpected directory')
 
     def test_symlink(self):
-        path = self.root / E / 'references/dialogue-principles.md'
+        path = self.root / E / 'CONTRACT.md'
         path.unlink()
         path.symlink_to(self.root / P / 'LICENSE')
         self.reject('symlink')
@@ -114,7 +115,7 @@ class PackageTests(unittest.TestCase):
         self.reject('steps mismatch')
 
     def test_step_kind(self):
-        self.edit(E + '/playbook.yml', lambda t: t.replace('agent_work: invoking_agent\n    purpose: 成果を左右する', 'skill: ask-until-agreed\n    purpose: 成果を左右する'))
+        self.edit(E + '/playbook.yml', lambda t: t.replace('agent_work: invoking_agent\n    purpose: 答えで成果が変わる', 'skill: ask-until-agreed\n    purpose: 答えで成果が変わる'))
         self.reject('steps mismatch')
 
     def test_extra_step(self):
@@ -134,7 +135,7 @@ class PackageTests(unittest.TestCase):
         self.reject('legacy runtime')
 
     def test_root_block(self):
-        self.edit(E + '/references/dialogue-principles.md', lambda t: t + '\nPLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-/x}"\n')
+        self.edit(E + '/CONTRACT.md', lambda t: t + '\nPLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-/x}"\n')
         self.reject('plumbing')
 
     def test_shell_block(self):
@@ -142,15 +143,15 @@ class PackageTests(unittest.TestCase):
         self.reject('shell block')
 
     def test_gherkin(self):
-        self.edit(E + '/references/dialogue-principles.md', lambda t: t + '\nScenario: example\n')
+        self.edit(E + '/CONTRACT.md', lambda t: t + '\nScenario: example\n')
         self.reject('Gherkin')
 
     def test_broken_link(self):
-        self.edit(E + '/SKILL.md', lambda t: t.replace('(references/dialogue-principles.md)', '(references/missing.md)'))
+        self.edit(E + '/SKILL.md', lambda t: t.replace('(CONTRACT.md)', '(references/missing.md)'))
         self.reject('link missing')
 
     def test_text_length_is_not_quality(self):
-        self.edit(E + '/references/dialogue-principles.md', lambda t: '# 内容は別途意味評価する\n')
+        self.edit(E + '/CONTRACT.md', lambda t: '# 内容は別途意味評価する\n')
         validator.validate(self.root)
 
 
