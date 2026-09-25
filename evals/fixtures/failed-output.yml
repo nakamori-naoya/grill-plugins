@@ -1,5 +1,0 @@
-# 合成入力の停止結果の例。保存先が有効な入力不備の場合。
-contract: grill/grill
-version: 1
-status: failed
-reason: questionsのq1にrecommendationがない
