@@ -16,19 +16,7 @@
   },
   "metadata": {
     "harness": {
-      "marketplace": "grill",
-      "contractVersion": 1,
-      "playbooks": {
-        "grill": "./skills/grill"
-      },
-      "implements": [
-        {
-          "id": "grill/grill",
-          "version": 1,
-          "kind": "playbook",
-          "playbook": "grill"
-        }
-      ]
+      "marketplace": "grill"
     }
   }
 }
