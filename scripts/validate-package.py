@@ -69,11 +69,7 @@ def validate(root):
     require(manifest.get('name') == 'grill' and isinstance(manifest.get('version'), str) and bool(manifest['version']), package, 'package identity invalid')
     require(manifest.get('skills') == [f'./{ENTRY}'], package, 'public skills mismatch')
     harness = manifest.get('metadata', {}).get('harness', {})
-    expected = {
-        'marketplace': 'grill', 'contractVersion': 1,
-        'playbooks': {'grill': f'./{ENTRY}'},
-        'implements': [{'id': 'grill/grill', 'version': 1, 'kind': 'playbook', 'playbook': 'grill'}],
-    }
+    expected = {'marketplace': 'grill'}
     require(equal(harness, expected), package, 'harness declaration mismatch')
     for rt, relative in [('claude', '.claude-plugin/marketplace.json'), ('codex', '.agents/plugins/marketplace.json')]:
         path = root / relative
