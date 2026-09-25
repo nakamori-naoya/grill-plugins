@@ -9,7 +9,7 @@
       "name": "grill",
       "source": "./plugins/grill",
       "description": "推奨回答を添えて厳選した問い（最大6問）を1問ずつ確認し、合意した決定と未決を返すPlaybook",
-      "version": "5.0.1"
+      "version": "5.1.0"
     }
   ]
 }
