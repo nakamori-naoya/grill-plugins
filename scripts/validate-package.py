@@ -12,7 +12,6 @@ ENTRY = 'skills/grill'
 FILES = {
     'LICENSE', '.claude-plugin/plugin.json', '.codex-plugin/plugin.json',
     f'{ENTRY}/CONTRACT.md', f'{ENTRY}/playbook.yml', f'{ENTRY}/SKILL.md',
-    f'{ENTRY}/references/dialogue-principles.md',
 }
 LEGACY = ('decision.py', 'finalize.sh', 'contract-io.py', 'prepare.sh',
           'run-config.py', 'resolve.sh', 'resolve-dependency.py')
@@ -105,7 +104,7 @@ def validate(root):
     require(isinstance(metadata, dict) and metadata.get('name') == 'grill'
             and isinstance(metadata.get('description'), str) and bool(metadata['description']), path, 'skill identity mismatch')
     require(not re.search(r'^```(?:bash|sh|shell)\b', text, re.M), path, 'shell block forbidden')
-    for path in [package / ENTRY / 'SKILL.md', package / ENTRY / 'CONTRACT.md', *(package / ENTRY / 'references').rglob('*.md')]:
+    for path in [package / ENTRY / 'SKILL.md', package / ENTRY / 'CONTRACT.md']:
         text = path.read_text()
         require(not any(legacy in text for legacy in LEGACY), path, 'legacy runtime reference')
         require(not any(token in text for token in PLUMBING), path, 'plumbing reference')

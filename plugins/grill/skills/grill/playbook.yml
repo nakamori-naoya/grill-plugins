@@ -1,6 +1,3 @@
-# grill — 厳選した問い（最大6問）を一問ずつ解消し、明示合意した決定と未決を返す。
-# 公開する入力・出力・保証は CONTRACT.md が契約定義である。工程順の正式な定義はこのYAMLであり、
-# すべての工程を同じagentが同じ会話で辿る。工程間で運ぶ値は無く、配列順だけが依存である。
 version: 2
 name: grill
 description: 一問ずつ曖昧さを解消し、明示合意した決定と未決を返す
@@ -10,19 +7,19 @@ requires: []
 steps:
   - id: investigate
     agent_work: invoking_agent
-    purpose: 材料、関連コード、既存文書、履歴を読み、確認済み事実と利用者の判断が要る論点を分けて示す
+    purpose: 資料とコードを読み、答えが分かる論点と利用者の判断が要る論点を分ける
     needs: [contract, version, topic, context, questions, references]
 
   - id: ask
     agent_work: invoking_agent
-    purpose: 成果を左右する最大6問を選び、前提が揃った順に一件ずつ推奨と理由付きで問い、回答と理由を会話内で保持する
+    purpose: 答えで成果が変わる問いを一問ずつ推奨と理由を添えて問う
 
   - id: agree
     agent_work: invoking_agent
-    purpose: 決定・未決・取り下げ（上限で問わなかった論点は推奨付きの未決）の一覧を示し、対話終了への明示合意を一問で得る
+    purpose: 決定と未決の一覧へ明示の合意を得る
 
   - id: return
     agent_work: invoking_agent
-    purpose: 契約の出力objectを組み立てて直接返し、output_toが指定されたときだけ一括保存して読み戻す
+    purpose: 決定と未決を返す
     needs: [output_to]
     provides: [status, decisions, open_questions, reason]
