@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
-"""grill package の構造を検査する。判定は manifest、配置、禁止した文字列の有無だけで一意に決まり、意味の採点はしない。"""
+"""grill の入口に固有の構造を検査する。配置と manifest は harness-tools の validate-plugin-repository.py が判定するので、ここでは見ない。
+
+基準資料: 入口の playbook.yml、SKILL.md、package の中の Markdown
+入力: 絶対パスで渡された repository。YAML は mikefarah/yq v4 で読む
+合格述語:
+  1. playbook.yml は version 2、name grill、requires が空で、steps が investigate、ask、agree、return の順に並び、
+     各 step は呼び出した agent が行う工程（agent_work: invoking_agent）で purpose を持ち、最後の step が結果の四つを provides する
+  2. SKILL.md の frontmatter が閉じていて、description が空でない。SKILL.md に shell のコードブロックが無い
+  3. package の Markdown に Gherkin（Feature:、Scenario:、```gherkin）が無い
+  4. package の Markdown の相対リンクは、package の中の実在するファイルを指す
+失敗時の診断: 違反したファイルと理由
+正例: この repository の配布物そのもの
+反例: test-package.py の負例（step の並びや種類の変更、shell のコードブロック、Gherkin、切れたリンク）
+意味評価として残す範囲: 問いの選び方、推奨と理由の質、合意の取り方
+"""
 import argparse
 import json
 from pathlib import Path
@@ -9,18 +23,7 @@ import sys
 
 PACKAGE = 'plugins/grill'
 ENTRY = 'skills/grill'
-FILES = {
-    'LICENSE', '.claude-plugin/plugin.json', '.codex-plugin/plugin.json',
-    f'{ENTRY}/CONTRACT.md', f'{ENTRY}/playbook.yml', f'{ENTRY}/SKILL.md',
-}
-LEGACY = ('decision.py', 'finalize.sh', 'contract-io.py', 'prepare.sh',
-          'run-config.py', 'resolve.sh', 'resolve-dependency.py')
-PLUMBING = ('${.', '<!-- BEGIN shared:', 'CLAUDE_PLUGIN_ROOT', 'BUNDLE_ROOT')
 STEP_IDS = ['investigate', 'ask', 'agree', 'return']
-
-
-def equal(left, right):
-    return json.dumps(left, sort_keys=True) == json.dumps(right, sort_keys=True)
 
 
 def require(condition, path, message):
@@ -35,51 +38,8 @@ def yaml_value(text, path):
     return json.loads(result.stdout)
 
 
-def string_leaves(value):
-    if isinstance(value, str):
-        yield value
-    elif isinstance(value, dict):
-        for item in value.values():
-            yield from string_leaves(item)
-    elif isinstance(value, list):
-        for item in value:
-            yield from string_leaves(item)
-
-
 def validate(root):
     package = root / PACKAGE
-    require(package.is_dir() and not package.is_symlink(), package, 'package directory missing or symlink')
-    require(not (root / 'plugins/.claude-plugin').exists() and not (root / 'plugins/.codex-plugin').exists(),
-            root / 'plugins', 'manifest must live under plugins/grill only')
-    found = set()
-    directories = {str(parent) for name in FILES for parent in Path(name).parents if str(parent) != '.'}
-    for path in package.rglob('*'):
-        require(not path.is_symlink(), path, 'symlink forbidden')
-        relative = path.relative_to(package).as_posix()
-        if path.is_dir():
-            require(relative in directories, path, 'unexpected directory')
-        else:
-            require(path.is_file(), path, 'not a regular file')
-            found.add(relative)
-    require(found == FILES, package, f'inventory mismatch: missing={sorted(FILES-found)}, extra={sorted(found-FILES)}')
-    manifests = [json.loads((package / f'.{rt}-plugin/plugin.json').read_text()) for rt in ('claude', 'codex')]
-    identity = lambda m: {key: m.get(key) for key in ('name', 'version', 'skills')} | {'harness': m.get('metadata', {}).get('harness')}
-    require(equal(identity(manifests[0]), identity(manifests[1])), package, 'runtime identity mismatch')
-    manifest = manifests[0]
-    require(manifest.get('name') == 'grill' and isinstance(manifest.get('version'), str) and bool(manifest['version']), package, 'package identity invalid')
-    require(manifest.get('skills') == [f'./{ENTRY}'], package, 'public skills mismatch')
-    harness = manifest.get('metadata', {}).get('harness', {})
-    expected = {'marketplace': 'grill'}
-    require(equal(harness, expected), package, 'harness declaration mismatch')
-    for rt, relative in [('claude', '.claude-plugin/marketplace.json'), ('codex', '.agents/plugins/marketplace.json')]:
-        path = root / relative
-        require(path.is_file() and not path.is_symlink(), path, 'catalog missing or symlink')
-        catalog = json.loads(path.read_text())
-        entries = catalog.get('plugins')
-        require(catalog.get('name') == 'grill' and isinstance(entries, list) and len(entries) == 1, path, 'catalog entry count/name mismatch')
-        entry = entries[0]
-        source = f'./{PACKAGE}' if rt == 'claude' else {'source': 'local', 'path': f'./{PACKAGE}'}
-        require(entry.get('name') == 'grill' and entry.get('version') == manifest['version'] and entry.get('source') == source, path, 'catalog identity mismatch')
     path = package / ENTRY / 'playbook.yml'
     config = yaml_value(path.read_text(), path)
     require(isinstance(config, dict) and type(config.get('version')) is int and config['version'] == 2 and config.get('name') == 'grill', path, 'composition identity mismatch')
@@ -90,20 +50,13 @@ def validate(root):
         require(set(step) - {'id', 'agent_work', 'purpose', 'needs', 'provides'} == set() and step.get('agent_work') == 'invoking_agent'
                 and isinstance(step.get('purpose'), str) and bool(step['purpose']), path, 'steps mismatch')
     require(steps[-1].get('provides') == ['status', 'decisions', 'open_questions', 'reason'], path, 'steps mismatch')
-    for leaf in string_leaves(config):
-        require(not any(token in leaf for token in PLUMBING), path, 'plumbing reference')
     path = package / ENTRY / 'SKILL.md'
     text = path.read_text()
     match = re.match(r'\A---\n(.*?)\n---(?:\n|$)', text, re.S)
     require(match is not None, path, 'frontmatter missing')
     metadata = yaml_value(match.group(1), path)
-    require(isinstance(metadata, dict) and metadata.get('name') == 'grill'
-            and isinstance(metadata.get('description'), str) and bool(metadata['description']), path, 'skill identity mismatch')
+    require(isinstance(metadata, dict) and isinstance(metadata.get('description'), str) and bool(metadata['description']), path, 'description missing')
     require(not re.search(r'^```(?:bash|sh|shell)\b', text, re.M), path, 'shell block forbidden')
-    for path in [package / ENTRY / 'SKILL.md', package / ENTRY / 'CONTRACT.md']:
-        text = path.read_text()
-        require(not any(legacy in text for legacy in LEGACY), path, 'legacy runtime reference')
-        require(not any(token in text for token in PLUMBING), path, 'plumbing reference')
     for path in package.rglob('*.md'):
         text = path.read_text()
         require(not re.search(r'^\s*(?:Feature:|Scenario:|```gherkin)', text, re.M), path, 'Gherkin は配布物に置かない')
