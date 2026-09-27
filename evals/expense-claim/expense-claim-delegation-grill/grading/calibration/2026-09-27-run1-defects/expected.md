@@ -8,13 +8,12 @@
 
 - ask-no-researchable: FAIL
 - ask-decisive: PASS
-- ask-limit: FAIL
 - ask-order: PASS
 - ask-one-with-recommendation: FAIL
 - ask-business-words: PASS
 - result-no-guessed-decision: FAIL
 - result-open-kept: FAIL
-- result-agreement: PASS
+- result-list: FAIL
 - result-scope: PASS
 - premises-from-requirements: FAIL
 - open-authority-gap: FAIL

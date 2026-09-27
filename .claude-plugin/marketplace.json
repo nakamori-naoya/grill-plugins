@@ -3,13 +3,13 @@
   "owner": {
     "name": "NaoyaNakamori"
   },
-  "description": "曖昧さを1問ずつ解消し、決定と未決を残すPlaybookパッケージを配布するmarketplace",
+  "description": "曖昧さを1問ずつ解消し、決定と未決を返すskillを配布するmarketplace",
   "plugins": [
     {
       "name": "grill",
       "source": "./plugins/grill",
-      "description": "推奨回答を添えて厳選した問い（最大6問）を1問ずつ確認し、合意した決定と未決を返すPlaybook",
-      "version": "5.1.0"
+      "description": "答えで成果が変わる問いだけを推奨と理由を添えて1問ずつ確かめ、決定と未決を返す",
+      "version": "5.2.0"
     }
   ]
 }
