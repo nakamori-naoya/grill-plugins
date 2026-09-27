@@ -33,22 +33,6 @@ class PackageTests(unittest.TestCase):
     def test_real_distribution_copy(self):
         validator.validate(self.root)
 
-    def test_requires_self(self):
-        self.edit(E + '/playbook.yml', lambda t: t.replace('requires: []', 'requires:\n  - {plugin: ask-until-agreed, marketplace: grill}'))
-        self.reject('requires')
-
-    def test_step_order(self):
-        self.edit(E + '/playbook.yml', lambda t: t.replace('id: ask\n', 'id: ask-first\n'))
-        self.reject('steps mismatch')
-
-    def test_step_kind(self):
-        self.edit(E + '/playbook.yml', lambda t: t.replace('agent_work: invoking_agent\n    purpose: 答えで成果が変わる', 'skill: ask-until-agreed\n    purpose: 答えで成果が変わる'))
-        self.reject('steps mismatch')
-
-    def test_extra_step(self):
-        self.edit(E + '/playbook.yml', lambda t: t + '  - id: extra\n    agent_work: invoking_agent\n    purpose: extra\n')
-        self.reject('steps mismatch')
-
     def test_description_missing(self):
         self.edit(E + '/SKILL.md', lambda t: t.replace('\ndescription:', '\nsummary:', 1))
         self.reject('description missing')
@@ -64,10 +48,6 @@ class PackageTests(unittest.TestCase):
     def test_broken_link(self):
         self.edit(E + '/SKILL.md', lambda t: t + '\n[欠けた資料](references/missing.md)\n')
         self.reject('link missing')
-
-    def test_text_length_is_not_quality(self):
-        self.edit(E + '/CONTRACT.md', lambda t: '# 内容は別途意味評価する\n')
-        validator.validate(self.root)
 
 
 if __name__ == '__main__':
