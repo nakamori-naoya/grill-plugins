@@ -2,7 +2,7 @@
 
 # grill package
 
-公開・インストール対象は package `grill@grill`（`./plugins/grill`）一件で、公開入口は `skills/grill` 一件である。内部 skill は置かない。入口は自分の SKILL.md だけで、調べること、問うこと、決定と未決を返すことを同じ agent が行う。ほかの入口は、題材と目的を文章で渡して grill を呼ぶ。
+公開・インストール対象は package `grill@grill`（`./plugins/grill`）一件で、公開入口は `skills/grill` 一件である。内部 skill は置かない。入口は自分の SKILL.md だけで、調べること、問うこと、前提と決定と未決を返すことを同じ agent が行う。ほかの入口は、題材と目的を文章で渡して grill を呼ぶ。
 
 問いの選び方と、未決を呼び出し元がどう扱うかは、この SKILL.md が一か所で持つ。題材固有の観点は入力から受け取り、実装や資料作成へ進まない。
 
