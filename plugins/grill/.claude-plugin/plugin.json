@@ -1,6 +1,6 @@
 {
   "name": "grill",
-  "version": "5.3.0",
+  "version": "5.3.1",
   "description": "答えで成果が変わる問いだけを、推奨と理由を添えて1問ずつ確かめ、入力から決まった前提、利用者が答えた決定、決められなかった未決を返す",
   "author": {
     "name": "NaoyaNakamori"
